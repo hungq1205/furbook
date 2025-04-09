@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"test/entity"
+
+	"gorm.io/gorm"
 )
 
 type MessageRepository struct {
@@ -11,6 +12,22 @@ type MessageRepository struct {
 
 func NewMessageRepository(db *gorm.DB) *MessageRepository {
 	return &MessageRepository{db: db}
+}
+
+func (r *MessageRepository) CreateMessage(message *entity.Message) (*entity.Message, error) {
+	err := r.db.Create(message).Error
+	if err != nil {
+		return nil, err
+	}
+	return message, nil
+}
+
+func (r *MessageRepository) DeleteMessagesByUser(username string) error {
+	err := r.db.Where("username = ?", username).Delete(&entity.Message{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *MessageRepository) GetGroupMessageList(groupID int) ([]*entity.Message, error) {
