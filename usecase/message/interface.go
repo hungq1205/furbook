@@ -1,13 +1,12 @@
-package usecase
+package message
 
 import (
-	"context"
 	"test/entity"
 )
 
 type UseCase interface {
-	SendMessage(ctx context.Context, content string, groupID int) (*entity.Message, error)
-	SendDirectMessage(ctx context.Context, oppUsername string, content string) (*entity.Message, error)
-	GetDirectMessageList(ctx context.Context, oppUsername string) ([]*entity.Message, error)
-	GetGroupMessageList(ctx context.Context, groupID int) ([]*entity.Message, error)
+	SendMessage(username string, content string, groupID int) (*entity.Message, error)
+	SendDirectMessage(username string, oppUsername string, content string) (*entity.Message, error)
+	GetDirectMessageList(username string, oppUsername string) ([]*entity.Message, error)
+	GetGroupMessageList(groupID int) ([]*entity.Message, error)
 }

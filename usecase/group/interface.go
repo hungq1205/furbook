@@ -1,19 +1,19 @@
-package usecase
+package group
 
 import (
-	"context"
 	"test/entity"
 )
 
 type UseCase interface {
-	GetGroup(ctx context.Context, groupID int) (*entity.Group, error)
-	UpdateGroup(ctx context.Context, groupID int, name string) (*entity.Group, error)
-	CreateGroup(ctx context.Context, name string) (*entity.Group, error)
-	DeleteGroup(ctx context.Context, groupID int) error
+	GetGroup(groupID int) (*entity.Group, error)
+	UpdateGroup(groupID int, groupName string) (*entity.Group, error)
+	CreateGroup(username string, groupName string) (*entity.Group, error)
+	DeleteGroup(groupID int) error
 
-	GetGroupsOfUser(ctx context.Context) ([]*entity.Group, error)
-	CheckOwnership(ctx context.Context, groupID int) (bool, error)
-	GetMembers(ctx context.Context, groupID int) ([]*entity.Group, error)
-	AddMember(ctx context.Context, groupID int, username string) (*entity.Group, error)
-	RemoveMember(ctx context.Context, groupID int, username string) error
+	GetGroupsOfUser(username string) ([]*entity.Group, error)
+	CheckOwnership(username string, groupID int) (bool, error)
+	CheckMembership(username string, groupID int) (bool, error)
+	GetMembers(groupID int) ([]*entity.User, error)
+	AddMember(groupID int, username string) (*entity.Group, error)
+	RemoveMember(groupID int, username string) (*entity.Group, error)
 }

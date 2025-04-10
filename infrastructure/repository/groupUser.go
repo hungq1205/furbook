@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"test/entity"
 
 	"gorm.io/gorm"
@@ -12,6 +13,15 @@ type GroupUserRepository struct {
 
 func NewGroupUserRepository(db *gorm.DB) *GroupUserRepository {
 	return &GroupUserRepository{db: db}
+}
+
+func (r *GroupUserRepository) CheckUserInGroup(groupID int, username string) (bool, error) {
+	var count int64
+	err := r.db.Model(&entity.GroupUser{}).Where("group_id = ? AND username = ?", groupID, username).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *GroupUserRepository) GetUsersInGroup(groupID int) ([]string, error) {
@@ -47,22 +57,31 @@ func (r *GroupUserRepository) GetDirectGroup(userA string, userB string) (*entit
 		Joins("join group_users gu2 on gu2.group_id = groups.id").
 		Where("g.is_direct = ? AND gu1.username = ? AND gu2.username = ?", true, userA, userB).
 		Take(&group).Error
-	if err != nil {
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		if r.db.Create(&group).Error != nil ||
+			r.AddUserToGroup(group.ID, userB) != nil ||
+			r.AddUserToGroup(group.ID, userB) != nil {
+			return nil, err
+		}
+	} else if err != nil {
+
 		return nil, err
 	}
+
 	return &group, nil
 }
 
-func (r *GroupUserRepository) AddUserToGroup(groupUser *entity.GroupUser) (*entity.GroupUser, error) {
-	err := r.db.Create(groupUser).Error
+func (r *GroupUserRepository) AddUserToGroup(groupId int, username string) error {
+	err := r.db.Create(&entity.GroupUser{GroupID: groupId, Username: username}).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return groupUser, nil
+	return nil
 }
 
-func (r *GroupUserRepository) RemoveUserFromGroup(groupUser *entity.GroupUser) error {
-	err := r.db.Delete(groupUser).Error
+func (r *GroupUserRepository) RemoveUserFromGroup(groupId int, username string) error {
+	err := r.db.Delete(&entity.GroupUser{GroupID: groupId, Username: username}).Error
 	if err != nil {
 		return err
 	}
