@@ -2,6 +2,7 @@ package repository
 
 import (
 	"test/entity"
+	"test/util"
 
 	"gorm.io/gorm"
 )
@@ -30,12 +31,14 @@ func (r *MessageRepository) DeleteMessagesByUser(username string) error {
 	return nil
 }
 
-func (r *MessageRepository) GetGroupMessageList(groupID int) ([]*entity.Message, error) {
+func (r *MessageRepository) GetGroupMessageList(groupID int, pagination *util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
 		Joins("join groups g on g.id = messages.group_id").
 		Where("group_id = ?", groupID).
 		Find(&messages).
+		Offset(pagination.Offset()).
+		Limit(pagination.Size).
 		Error
 	if err != nil {
 		return nil, err
@@ -44,13 +47,15 @@ func (r *MessageRepository) GetGroupMessageList(groupID int) ([]*entity.Message,
 	return nil, nil
 }
 
-func (r *MessageRepository) GetDirectMessageList(userA string, userB string) ([]*entity.Message, error) {
+func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pagination *util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
 		Joins("join user_groups ug1 on ug1.username = ?", userA).
 		Joins("join user_groups ug2 on ug2.username = ?", userB).
 		Where("groups.is_direct = ?", true).
 		Find(&messages).
+		Offset(pagination.Offset()).
+		Limit(pagination.Size).
 		Error
 	if err != nil {
 		return nil, err

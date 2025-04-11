@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"test/entity"
+	"test/util"
 
 	"gorm.io/gorm"
 )
@@ -36,13 +37,16 @@ func (r *GroupUserRepository) GetUsersInGroup(groupID int) ([]string, error) {
 	return users, nil
 }
 
-func (r *GroupUserRepository) GetGroupsOfUser(username string) ([]*entity.Group, error) {
+func (r *GroupUserRepository) GetGroupsOfUser(username string, pagination *util.Pagination) ([]*entity.Group, error) {
 	var groups []*entity.Group
 	err := r.db.
 		Joins("join groups g on g.id = group_users.group_id").
 		Where("username = ?", username).
 		Select("g.*").
-		Find(&groups).Error
+		Find(&groups).
+		Offset(pagination.Offset()).
+		Limit(pagination.Size).
+		Error
 	if err != nil {
 		return nil, err
 	}
