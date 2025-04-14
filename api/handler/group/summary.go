@@ -1,0 +1,191 @@
+package group
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
+	"test/api/client"
+	payload "test/api/payload/group"
+	"test/usecase/group"
+	"test/util"
+)
+
+func getGroup(ctx *gin.Context, groupService group.UseCase) {
+	groupIdParam := ctx.Param("groupId")
+	groupId, err := strconv.Atoi(groupIdParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse groupId"})
+		return
+	}
+
+	g, err := groupService.GetGroup(groupId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot get group"})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenter)
+}
+
+func createGroup(ctx *gin.Context, groupService group.UseCase) {
+	var body payload.CreateGroupPayload
+	err := ctx.ShouldBindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse group"})
+		return
+	}
+
+	g, err := groupService.CreateGroup(body.GroupName, body.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, groupPresenter)
+}
+
+func updateGroup(ctx *gin.Context, groupService group.UseCase) {
+	groupIdParam := ctx.Param("groupId")
+	groupId, err := strconv.Atoi(groupIdParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse groupId"})
+		return
+	}
+
+	var body payload.UpdateGroupPayload
+	err = ctx.ShouldBindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse group update payload"})
+		return
+	}
+
+	g, err := groupService.UpdateGroup(groupId, body.GroupName)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenter)
+}
+
+func deleteGroup(ctx *gin.Context, groupService group.UseCase) {
+	var body payload.DeleteGroupPayload
+	err := ctx.ShouldBindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse group delete payload"})
+		return
+	}
+
+	err = groupService.DeleteGroup(body.GroupID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+func addMemberToGroup(ctx *gin.Context, groupService group.UseCase) {
+	var body payload.GroupMemberPayload
+	err := ctx.ShouldBindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse group member payload"})
+		return
+	}
+
+	g, err := groupService.AddMember(body.GroupID, body.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenter)
+}
+
+func removeMemberToGroup(ctx *gin.Context, groupService group.UseCase) {
+	var body payload.GroupMemberPayload
+	err := ctx.ShouldBindJSON(&body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse group member payload"})
+		return
+	}
+
+	g, err := groupService.RemoveMember(body.GroupID, body.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenter)
+}
+
+func getGroupsOfUser(ctx *gin.Context, groupService group.UseCase) {
+	username := ctx.Query("username")
+	pagination := util.ExtractPagination(ctx)
+
+	groups, err := groupService.GetGroupsOfUser(username, pagination)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	groupPresenters, err := groupListEntityToPresenter(groups, groupService)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenters)
+}
+
+func getMembersOfGroup(ctx *gin.Context, groupService group.UseCase, userClient client.UserClient) {
+	groupID, err := strconv.Atoi(ctx.Param("groupId"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot parse groupId"})
+		return
+	}
+
+	usernames, err := groupService.GetMembers(groupID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	users, err := userClient.FindUsers(usernames)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+}
