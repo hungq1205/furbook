@@ -5,36 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="38a640ff-11bf-4deb-b8b7-07a5b8d5815d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/testgo.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/testgo.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/client/user.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/group/common.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/group/handler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/group/summary.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/message/common.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/message/handler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/handler/message/summary.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/middleware/auth.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/payload/group/payload.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/payload/message/payload.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/presenter/group.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/presenter/message.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/entity/group.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/entity/groupUser.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/entity/message.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/infrastructure/repository/group.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/infrastructure/repository/groupUser.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/infrastructure/repository/message.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/usecase/group/interface.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/usecase/group/service.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/usecase/message/interface.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/usecase/message/service.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/util/pagination.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/post/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +58,7 @@
     "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "D:/work/dev/projects/testgo/post/api/middleware",
+    "last_opened_file_path": "D:/work/dev/projects/testgo/message",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -100,6 +72,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\work\dev\projects\testgo\message" />
       <recent name="D:\work\dev\projects\testgo\post\api\middleware" />
       <recent name="D:\work\dev\projects\testgo\api\presenter" />
     </key>

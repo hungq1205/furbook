@@ -1,0 +1,61 @@
+services:
+  messagedb:
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - messagedb_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: message
+
+  message:
+    build: ./message
+    depends_on:
+      - messagedb
+    ports:
+      - "3001:8080"
+
+  postdb:
+    image: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - postdb_data:/data/db
+
+  post:
+    build: ./post
+    depends_on:
+      - postdb
+    ports:
+      - "3002:8080"
+
+  userdb:
+    image: postgres
+    restart: always
+    ports:
+      - "5434:5432"
+    volumes:
+      - userdb_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: user
+
+  user:
+    build: ./user
+    depends_on:
+      - userdb
+    ports:
+      - "3003:8080"
+
+volumes:
+  messagedb_data:
+  postdb_data:
+  userdb_data:
