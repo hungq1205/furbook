@@ -1,8 +1,8 @@
 package message
 
 import (
-	"test/api/presenter"
-	"test/entity"
+	"message/api/presenter"
+	"message/entity"
 )
 
 func messageEntityToPresenter(in *entity.Message) (out *presenter.Message) {

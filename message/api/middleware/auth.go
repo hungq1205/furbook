@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"message/util"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ func MustAuthorizeMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		c.Set("username", username)
+		util.RegisterUsername(c, username)
 		c.Next()
 	}
 }
@@ -20,7 +21,7 @@ func MustAuthorizeMiddleware() gin.HandlerFunc {
 func AuthorizeMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetHeader("X-Username")
-		c.Set("username", username)
+		util.RegisterUsername(c, username)
 		c.Next()
 	}
 }

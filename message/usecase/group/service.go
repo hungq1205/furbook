@@ -1,9 +1,9 @@
 package group
 
 import (
-	"test/entity"
-	"test/infrastructure/repository"
-	"test/util"
+	"message/entity"
+	"message/infrastructure/repository"
+	"message/util"
 )
 
 type Service struct {
@@ -60,7 +60,7 @@ func (s *Service) DeleteGroup(groupID int) error {
 	return nil
 }
 
-func (s *Service) GetGroupsOfUser(username string, pagination *util.Pagination) ([]*entity.Group, error) {
+func (s *Service) GetGroupsOfUser(username string, pagination util.Pagination) ([]*entity.Group, error) {
 	users, err := s.groupUserRepo.GetGroupsOfUser(username, pagination)
 	if err != nil {
 		return nil, err

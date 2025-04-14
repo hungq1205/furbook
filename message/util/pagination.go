@@ -10,14 +10,14 @@ type Pagination struct {
 	Size int
 }
 
-func NewPagination(page, size int) *Pagination {
-	return &Pagination{
+func NewPagination(page, size int) Pagination {
+	return Pagination{
 		Page: page,
 		Size: size,
 	}
 }
 
-func ExtractPagination(ctx *gin.Context) *Pagination {
+func ExtractPagination(ctx *gin.Context) Pagination {
 	sizeQuery := ctx.Query("size")
 	size, err := strconv.Atoi(sizeQuery)
 	if err != nil || size < 0 {
@@ -33,6 +33,6 @@ func ExtractPagination(ctx *gin.Context) *Pagination {
 	return NewPagination(page, size)
 }
 
-func (p *Pagination) Offset() int {
+func (p Pagination) Offset() int {
 	return (p.Page - 1) * p.Size
 }

@@ -1,9 +1,9 @@
 package group
 
 import (
-	"test/api/presenter"
-	"test/entity"
-	"test/usecase/group"
+	"message/api/presenter"
+	"message/entity"
+	"message/usecase/group"
 )
 
 func groupEntityToPresenter(in *entity.Group, groupService group.UseCase) (*presenter.Group, error) {

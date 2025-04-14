@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"test/entity"
+	"message/entity"
 
 	"gorm.io/gorm"
 )

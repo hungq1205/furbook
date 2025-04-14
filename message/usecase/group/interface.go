@@ -1,8 +1,8 @@
 package group
 
 import (
-	"test/entity"
-	"test/util"
+	"message/entity"
+	"message/util"
 )
 
 type UseCase interface {
@@ -11,7 +11,7 @@ type UseCase interface {
 	CreateGroup(username string, groupName string) (*entity.Group, error)
 	DeleteGroup(groupID int) error
 
-	GetGroupsOfUser(username string, pagination *util.Pagination) ([]*entity.Group, error)
+	GetGroupsOfUser(username string, pagination util.Pagination) ([]*entity.Group, error)
 	CheckOwnership(username string, groupID int) (bool, error)
 	CheckMembership(username string, groupID int) (bool, error)
 	GetMembers(groupID int) ([]string, error)

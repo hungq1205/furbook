@@ -3,8 +3,8 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"message/api/presenter"
 	"net/http"
-	"test/api/presenter"
 )
 
 type UserClient interface {

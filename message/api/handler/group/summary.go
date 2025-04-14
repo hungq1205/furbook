@@ -2,12 +2,12 @@ package group
 
 import (
 	"github.com/gin-gonic/gin"
+	"message/api/client"
+	payload "message/api/payload/group"
+	"message/usecase/group"
+	"message/util"
 	"net/http"
 	"strconv"
-	"test/api/client"
-	payload "test/api/payload/group"
-	"test/usecase/group"
-	"test/util"
 )
 
 func getGroup(ctx *gin.Context, groupService group.UseCase) {

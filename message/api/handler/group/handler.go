@@ -2,8 +2,8 @@ package group
 
 import (
 	"github.com/gin-gonic/gin"
-	"test/api/client"
-	"test/usecase/group"
+	"message/api/client"
+	"message/usecase/group"
 )
 
 func MakeHandler(app *gin.Engine, groupService group.UseCase, userClient client.UserClient) {

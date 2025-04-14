@@ -2,9 +2,9 @@ package message
 
 import (
 	"github.com/gin-gonic/gin"
-	"test/api/middleware"
-	"test/usecase/group"
-	"test/usecase/message"
+	"message/api/middleware"
+	"message/usecase/group"
+	"message/usecase/message"
 )
 
 func MakeHandler(app *gin.Engine, messageService message.UseCase, groupService group.UseCase) {

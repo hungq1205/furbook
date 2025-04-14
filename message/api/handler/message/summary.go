@@ -2,12 +2,12 @@ package message
 
 import (
 	"github.com/gin-gonic/gin"
+	payload "message/api/payload/message"
+	"message/usecase/group"
+	"message/usecase/message"
+	"message/util"
 	"net/http"
 	"strconv"
-	payload "test/api/payload/message"
-	"test/usecase/group"
-	"test/usecase/message"
-	"test/util"
 )
 
 func checkMembership(ctx *gin.Context, groupID int, groupService group.UseCase) {

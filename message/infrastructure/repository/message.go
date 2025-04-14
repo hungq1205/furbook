@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"test/entity"
-	"test/util"
+	"message/entity"
+	"message/util"
 
 	"gorm.io/gorm"
 )
@@ -31,7 +31,7 @@ func (r *MessageRepository) DeleteMessagesByUser(username string) error {
 	return nil
 }
 
-func (r *MessageRepository) GetGroupMessageList(groupID int, pagination *util.Pagination) ([]*entity.Message, error) {
+func (r *MessageRepository) GetGroupMessageList(groupID int, pagination util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
 		Joins("join groups g on g.id = messages.group_id").
@@ -47,7 +47,7 @@ func (r *MessageRepository) GetGroupMessageList(groupID int, pagination *util.Pa
 	return nil, nil
 }
 
-func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pagination *util.Pagination) ([]*entity.Message, error) {
+func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pagination util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
 		Joins("join user_groups ug1 on ug1.username = ?", userA).

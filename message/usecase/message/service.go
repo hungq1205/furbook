@@ -3,9 +3,9 @@ package message
 import (
 	"errors"
 	"gorm.io/gorm"
-	"test/entity"
-	"test/infrastructure/repository"
-	"test/util"
+	"message/entity"
+	"message/infrastructure/repository"
+	"message/util"
 )
 
 type Service struct {
@@ -52,7 +52,7 @@ func (s *Service) SendDirectMessage(username string, oppUsername string, content
 	return msg, err
 }
 
-func (s *Service) GetDirectMessageList(username string, oppUsername string, pagination *util.Pagination) ([]*entity.Message, error) {
+func (s *Service) GetDirectMessageList(username string, oppUsername string, pagination util.Pagination) ([]*entity.Message, error) {
 	messages, err := s.messageRepo.GetDirectMessageList(username, oppUsername, pagination)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return []*entity.Message{}, nil
@@ -63,7 +63,7 @@ func (s *Service) GetDirectMessageList(username string, oppUsername string, pagi
 	return messages, nil
 }
 
-func (s *Service) GetGroupMessageList(groupID int, pagination *util.Pagination) ([]*entity.Message, error) {
+func (s *Service) GetGroupMessageList(groupID int, pagination util.Pagination) ([]*entity.Message, error) {
 	messages, err := s.messageRepo.GetGroupMessageList(groupID, pagination)
 	if err != nil {
 		return nil, err
