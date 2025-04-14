@@ -1,15 +1,51 @@
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
 services:
-  messagedb:
+  authdb:
     image: postgres
     restart: always
     ports:
       - "5433:5432"
+    volumes:
+      - authdb_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: auth
+    networks:
+      - backend
+
+  gateway:
+    build: ./gateway
+    depends_on:
+      - authdb
+    ports:
+      - "3000:8080"
+    environment:
+      MESSAGE_SERVICE_URL: "http://localhost:3001"
+      POST_SERVICE_URL: "http://localhost:3002"
+      USER_SERVICE_URL: "http://localhost:3003"
+    networks:
+      - backend
+      - frontend
+
+  messagedb:
+    image: postgres
+    restart: always
+    ports:
+      - "5434:5432"
     volumes:
       - messagedb_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: message
+    networks:
+      - backend
 
   message:
     build: ./message
@@ -17,6 +53,8 @@ services:
       - messagedb
     ports:
       - "3001:8080"
+    networks:
+      - backend
 
   postdb:
     image: mongo
@@ -28,6 +66,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin123
     volumes:
       - postdb_data:/data/db
+    networks:
+      - backend
 
   post:
     build: ./post
@@ -35,27 +75,34 @@ services:
       - postdb
     ports:
       - "3002:8080"
+    networks:
+      - backend
 
   userdb:
     image: postgres
     restart: always
     ports:
-      - "5434:5432"
+      - "5435:5432"
     volumes:
       - userdb_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: user
+    networks:
+      - backend
 
-  user:
-    build: ./user
-    depends_on:
-      - userdb
-    ports:
-      - "3003:8080"
+#  user:
+#    build: ./user
+#    depends_on:
+#      - userdb
+#    ports:
+#      - "3003:8080"
+#    networks:
+#      - backend
 
 volumes:
+  authdb_data:
   messagedb_data:
   postdb_data:
   userdb_data:

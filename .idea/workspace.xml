@@ -6,23 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="38a640ff-11bf-4deb-b8b7-07a5b8d5815d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/client/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/client/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/group/common.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/group/common.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/group/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/group/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/group/summary.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/group/summary.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/message/common.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/message/common.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/message/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/message/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/handler/message/summary.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/api/handler/message/summary.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/api/middleware/auth.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/message/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/infrastructure/repository/group.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/infrastructure/repository/group.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/infrastructure/repository/groupUser.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/infrastructure/repository/groupUser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/infrastructure/repository/message.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/infrastructure/repository/message.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/usecase/group/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/usecase/group/interface.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/usecase/group/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/usecase/group/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/usecase/message/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/usecase/message/interface.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/usecase/message/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/message/usecase/message/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/message/util/pagination.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +20,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../pkg/go/go1.22.5" />
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../pkg/go/pkg/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.8.windows-amd64" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -94,6 +78,7 @@
       <recent name="D:\work\dev\projects\testgo\api\presenter" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\work\dev\projects\testgo\gateway\internal" />
       <recent name="D:\work\dev\projects\testgo" />
     </key>
   </component>
