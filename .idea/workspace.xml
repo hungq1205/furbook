@@ -7,6 +7,8 @@
     <list default="true" id="38a640ff-11bf-4deb-b8b7-07a5b8d5815d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/auth/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/auth/repository.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +60,7 @@
     "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "D:/work/dev/projects/testgo/message/api/middleware",
+    "last_opened_file_path": "D:/work/dev/projects/testgo/user",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -72,6 +74,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\work\dev\projects\testgo\user" />
       <recent name="D:\work\dev\projects\testgo\message\api\middleware" />
       <recent name="D:\work\dev\projects\testgo\message" />
       <recent name="D:\work\dev\projects\testgo\post\api\middleware" />

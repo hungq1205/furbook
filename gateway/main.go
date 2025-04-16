@@ -9,22 +9,28 @@ import (
 	"net/url"
 )
 
-var SecretKey = []byte("as you have seen, a very secret key")
-
 type LoginOrSignUpRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type CheckUsernameRequest struct {
-	Username string `json:"username"`
-}
-
 func main() {
 	app := gin.New()
+	MakeAuthHandler(app, MakeAuthRepository())
+	MakeGatewayHandler(app)
+
 	if err := app.Run(":8080"); err != nil {
 		panic(err)
 	}
+}
+
+func MakeAuthRepository() *auth.Repository {
+	authDsn := "host=authdb user=postgres password=root dbname=auth port=5432 sslmode=disable"
+	authRepo, err := auth.NewAuthRepository(authDsn)
+	if err != nil {
+		panic(err)
+	}
+	return authRepo
 }
 
 func MakeGatewayHandler(app *gin.Engine) {
@@ -36,9 +42,18 @@ func MakeGatewayHandler(app *gin.Engine) {
 	group.GET("/api/user/*path", ProxyTo("USER_SERVICE_URL"))
 }
 
-func MakeAuthHandler(app *gin.Engine, authRepo *auth.AuthRepository) *gin.Engine {
+func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository) {
 	group := app.Group("/api/auth")
 	{
+		group.GET("/exists/:username", func(c *gin.Context) {
+			user, err := authRepo.GetUser(c.Param("username"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"exists": user != nil})
+		})
+
 		group.POST("/login", func(c *gin.Context) {
 			var body LoginOrSignUpRequest
 			if err := c.ShouldBindJSON(&body); err != nil {
@@ -46,7 +61,20 @@ func MakeAuthHandler(app *gin.Engine, authRepo *auth.AuthRepository) *gin.Engine
 				return
 			}
 			val, err := authRepo.Authenticate(body.Username, body.Password)
-			c.JSON(http.StatusOK, gin.H{"token": "token"})
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			if !val {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+				return
+			}
+			token, err := internal.GenerateJwt(body.Username)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"token": token})
 		})
 
 		group.POST("/signup", func(c *gin.Context) {
@@ -55,7 +83,16 @@ func MakeAuthHandler(app *gin.Engine, authRepo *auth.AuthRepository) *gin.Engine
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			c.JSON(http.StatusOK, gin.H{"token": "token"})
+			user, err := authRepo.GetUser(body.Username)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			if user == nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
+				return
+			}
+			c.Status(http.StatusCreated)
 		})
 	}
 }

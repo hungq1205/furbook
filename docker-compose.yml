@@ -92,14 +92,14 @@ services:
     networks:
       - backend
 
-#  user:
-#    build: ./user
-#    depends_on:
-#      - userdb
-#    ports:
-#      - "3003:8080"
-#    networks:
-#      - backend
+  user:
+    build: ./user
+    depends_on:
+      - userdb
+    ports:
+      - "3003:8080"
+    networks:
+      - backend
 
 volumes:
   authdb_data:

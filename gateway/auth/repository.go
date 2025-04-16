@@ -12,26 +12,25 @@ type User struct {
 	PasswordHashed string `gorm:"password_hashed"`
 }
 
-type AuthRepository struct {
+type Repository struct {
 	db *gorm.DB
 }
 
-func NewAuthRepository() (*AuthRepository, error) {
-	dsn := "host=authdb user=postgres password=root dbname=auth port=5432 sslmode=disable"
+func NewAuthRepository(dsn string) (*Repository, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return &AuthRepository{
+	return &Repository{
 		db: db,
 	}, nil
 }
 
-func (r *AuthRepository) Migrate() error {
+func (r *Repository) Migrate() error {
 	return r.db.AutoMigrate(&User{})
 }
 
-func (r *AuthRepository) Authenticate(username, password string) (bool, error) {
+func (r *Repository) Authenticate(username, password string) (bool, error) {
 	hashedPassword := internal.Hash(password)
 	var user User
 	err := r.db.First(&User{}).Where("hashed_password = ?", hashedPassword).Find(&user).Error
@@ -44,23 +43,26 @@ func (r *AuthRepository) Authenticate(username, password string) (bool, error) {
 	return true, nil
 }
 
-func (r *AuthRepository) GetUser(username string) (*User, error) {
+func (r *Repository) GetUser(username string) (*User, error) {
 	var user User
 	err := r.db.First(&user, username).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *AuthRepository) CreateUser(username, password string) error {
+func (r *Repository) CreateUser(username, password string) error {
 	return r.db.Create(&User{Username: username, PasswordHashed: internal.Hash(password)}).Error
 }
 
-func (r *AuthRepository) UpdateUser(username, password string) error {
+func (r *Repository) UpdateUser(username, password string) error {
 	return r.db.Save(&User{Username: username, PasswordHashed: internal.Hash(password)}).Error
 }
 
-func (r *AuthRepository) DeleteUser(username string) error {
+func (r *Repository) DeleteUser(username string) error {
 	return r.db.Delete(&User{}, username).Error
 }
