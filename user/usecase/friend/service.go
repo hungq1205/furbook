@@ -1,15 +1,21 @@
 package friend
 
 import (
-	"user-service/entity"
-	"user-service/infrastructure/repository/friend"
+	"user/entity"
+	"user/infrastructure/repository/friend"
 )
 
-type FriendService struct {
+type Service struct {
 	friendRepo *friend.FriendRepository
 }
 
-func (s *FriendService) GetFriendRequests(username string) ([]*entity.User, error) {
+func NewService(friendRepo *friend.FriendRepository) *Service {
+	return &Service{
+		friendRepo: friendRepo,
+	}
+}
+
+func (s *Service) GetFriendRequests(username string) ([]*entity.User, error) {
 	reqUsers, err := s.friendRepo.GetFriendRequests(username)
 	if err != nil {
 		return nil, err
@@ -17,11 +23,11 @@ func (s *FriendService) GetFriendRequests(username string) ([]*entity.User, erro
 	return reqUsers, nil
 }
 
-func (s *FriendService) CheckFriendRequest(sender string, receiver string) (bool, error) {
+func (s *Service) CheckFriendRequest(sender string, receiver string) (bool, error) {
 	return s.friendRepo.CheckFriendRequest(sender, receiver)
 }
 
-func (s *FriendService) SendFriendRequest(sender string, receiver string) error {
+func (s *Service) SendFriendRequest(sender string, receiver string) error {
 	friendExists, err := s.friendRepo.CheckFriendship(sender, receiver)
 	if err != nil {
 		return err
@@ -58,14 +64,14 @@ func (s *FriendService) SendFriendRequest(sender string, receiver string) error 
 	return nil
 }
 
-func (s *FriendService) DeleteFriendRequest(sender string, receiver string) error {
+func (s *Service) DeleteFriendRequest(sender string, receiver string) error {
 	if err := s.friendRepo.DeleteFriendRequest(sender, receiver); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *FriendService) CountFriendRequests(username string) (int, error) {
+func (s *Service) CountFriendRequests(username string) (int, error) {
 	count, err := s.friendRepo.CountFriendRequests(username)
 	if err != nil {
 		return 0, err
@@ -73,7 +79,7 @@ func (s *FriendService) CountFriendRequests(username string) (int, error) {
 	return int(count), nil
 }
 
-func (s *FriendService) GetFriends(username string) ([]*entity.User, error) {
+func (s *Service) GetFriends(username string) ([]*entity.User, error) {
 	friends, err := s.friendRepo.GetFriends(username)
 	if err != nil {
 		return nil, err
@@ -81,18 +87,18 @@ func (s *FriendService) GetFriends(username string) ([]*entity.User, error) {
 	return friends, nil
 }
 
-func (s *FriendService) CheckFriendship(usernA string, userB string) (bool, error) {
+func (s *Service) CheckFriendship(usernA string, userB string) (bool, error) {
 	return s.friendRepo.CheckFriendship(usernA, userB)
 }
 
-func (s *FriendService) DeleteFriend(sender string, receiver string) error {
+func (s *Service) DeleteFriend(sender string, receiver string) error {
 	if err := s.friendRepo.DeleteFriend(sender, receiver); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *FriendService) CountFriends(username string) (int, error) {
+func (s *Service) CountFriends(username string) (int, error) {
 	count, err := s.friendRepo.CountFriends(username)
 	if err != nil {
 		return 0, err

@@ -1,9 +1,9 @@
 package user
 
 import (
-	"user-service/entity"
-	"user-service/presenter"
-	"user-service/usecase/friend"
+	"user/entity"
+	"user/presenter"
+	"user/usecase/friend"
 )
 
 func UserEntityToPresenter(in *entity.User, friendSerivce friend.UseCase) (*presenter.User, error) {

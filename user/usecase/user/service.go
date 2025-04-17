@@ -1,15 +1,21 @@
 package user
 
 import (
-	"user-service/entity"
-	"user-service/infrastructure/repository/user"
+	"user/entity"
+	"user/infrastructure/repository/user"
 )
 
-type UserService struct {
+type Service struct {
 	userRepo *user.UserRepository
 }
 
-func (s *UserService) GetUser(username string) (*entity.User, error) {
+func NewService(userRepo *user.UserRepository) *Service {
+	return &Service{
+		userRepo: userRepo,
+	}
+}
+
+func (s *Service) GetUser(username string) (*entity.User, error) {
 	user, err := s.userRepo.GetUser(username)
 	if err != nil {
 		return nil, err
@@ -17,7 +23,7 @@ func (s *UserService) GetUser(username string) (*entity.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetUsers(usernames []string) ([]*entity.User, error) {
+func (s *Service) GetUsers(usernames []string) ([]*entity.User, error) {
 	users, err := s.userRepo.GetUsers(usernames)
 	if err != nil {
 		return nil, err
@@ -25,7 +31,7 @@ func (s *UserService) GetUsers(usernames []string) ([]*entity.User, error) {
 	return users, nil
 }
 
-func (s *UserService) CheckUsernameExists(username string) (bool, error) {
+func (s *Service) CheckUsernameExists(username string) (bool, error) {
 	exists, err := s.userRepo.CheckUsernameExists(username)
 	if err != nil {
 		return false, err
@@ -33,7 +39,7 @@ func (s *UserService) CheckUsernameExists(username string) (bool, error) {
 	return exists, nil
 }
 
-func (s *UserService) CreateUser(username string, avatar string) (*entity.User, error) {
+func (s *Service) CreateUser(username string, avatar string) (*entity.User, error) {
 	user, err := s.userRepo.CreateUser(username, avatar)
 	if err != nil {
 		return nil, err
@@ -41,7 +47,7 @@ func (s *UserService) CreateUser(username string, avatar string) (*entity.User, 
 	return user, nil
 }
 
-func (s *UserService) UpdateUser(username string, avatar string) (*entity.User, error) {
+func (s *Service) UpdateUser(username string, avatar string) (*entity.User, error) {
 	user, err := s.userRepo.UpdateUser(username, avatar)
 	if err != nil {
 		return nil, err
@@ -49,7 +55,7 @@ func (s *UserService) UpdateUser(username string, avatar string) (*entity.User, 
 	return user, nil
 }
 
-func (s *UserService) DeleteUser(username string) error {
+func (s *Service) DeleteUser(username string) error {
 	if err := s.userRepo.DeleteUser(username); err != nil {
 		return err
 	}

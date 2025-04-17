@@ -1,11 +1,12 @@
 package post
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"post/api/payload"
 	"post/usecase/post"
 	"post/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetPost(c *gin.Context, postService *post.Service) {

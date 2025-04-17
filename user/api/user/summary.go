@@ -2,10 +2,10 @@ package user
 
 import (
 	"net/http"
-	"user-service/api/payload"
-	"user-service/usecase/friend"
-	"user-service/usecase/user"
-	"user-service/util"
+	"user/api/payload"
+	"user/usecase/friend"
+	"user/usecase/user"
+	"user/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -132,12 +132,7 @@ func GetFriendRequestList(ctx *gin.Context, friendService friend.UseCase) {
 }
 
 func CheckFriendRequest(ctx *gin.Context, friendService friend.UseCase) {
-	var body payload.SenderWrapper
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-	exists, err := friendService.CheckFriendRequest(body.Sender, util.MustGetUsername(ctx))
+	exists, err := friendService.CheckFriendRequest(ctx.Param("username"), ctx.Param("friend"))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friend request"})
 		return
@@ -146,17 +141,30 @@ func CheckFriendRequest(ctx *gin.Context, friendService friend.UseCase) {
 }
 
 func CheckFriendship(ctx *gin.Context, friendService friend.UseCase) {
-	var body payload.CheckFriendRequest
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-	exists, err := friendService.CheckFriendship(body.Username, body.Friend)
+	exists, err := friendService.CheckFriendship(ctx.Param("username"), ctx.Param("friend"))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friendship"})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"exists": exists})
+}
+
+func CountFriends(ctx *gin.Context, friendService friend.UseCase) {
+	count, err := friendService.CountFriends(ctx.Param("username"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count friends"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"count": count})
+}
+
+func CountFriendRequests(ctx *gin.Context, friendService friend.UseCase) {
+	count, err := friendService.CountFriendRequests(ctx.Param("username"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count friend requests"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"count": count})
 }
 
 func SendFriendRequest(ctx *gin.Context, friendService friend.UseCase) {

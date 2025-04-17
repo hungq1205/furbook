@@ -1,9 +1,10 @@
 package post
 
 import (
-	"github.com/gin-gonic/gin"
 	"post/api/middleware"
 	"post/usecase/post"
+
+	"github.com/gin-gonic/gin"
 )
 
 func MakeHandler(app *gin.Engine, postService *post.Service) {
@@ -13,7 +14,7 @@ func MakeHandler(app *gin.Engine, postService *post.Service) {
 			GetPost(c, postService)
 		})
 
-		postGroup.GET("/ofUser/:username", func(c *gin.Context) {
+		postGroup.GET("/ofuser/:username", func(c *gin.Context) {
 			GetPostsOfUser(c, postService)
 		})
 

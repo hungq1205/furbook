@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"post/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 func MustAuthorizeMiddleware() gin.HandlerFunc {
