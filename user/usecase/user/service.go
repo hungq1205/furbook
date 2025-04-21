@@ -5,52 +5,44 @@ import (
 	"user-service/infrastructure/repository/user"
 )
 
-type UserService struct {
+type Service struct {
 	userRepo *user.UserRepository
 }
 
-func (s *UserService) GetUser(username string) (*entity.User, error) {
-	user, err := s.userRepo.GetUser(username)
+func (s *Service) GetUser(userID uint) (*entity.User, error) {
+	usr, err := s.userRepo.GetUser(userID)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return usr, nil
 }
 
-func (s *UserService) GetUsers(usernames []string) ([]*entity.User, error) {
-	users, err := s.userRepo.GetUsers(usernames)
+func (s *Service) GetUsers(userIDs []uint) ([]*entity.User, error) {
+	users, err := s.userRepo.GetUsers(userIDs)
 	if err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-func (s *UserService) CheckUsernameExists(username string) (bool, error) {
-	exists, err := s.userRepo.CheckUsernameExists(username)
-	if err != nil {
-		return false, err
-	}
-	return exists, nil
-}
-
-func (s *UserService) CreateUser(username string, avatar string) (*entity.User, error) {
-	user, err := s.userRepo.CreateUser(username, avatar)
+func (s *Service) CreateUser(username string, avatar string) (*entity.User, error) {
+	usr, err := s.userRepo.CreateUser(username, avatar)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return usr, nil
 }
 
-func (s *UserService) UpdateUser(username string, avatar string) (*entity.User, error) {
-	user, err := s.userRepo.UpdateUser(username, avatar)
+func (s *Service) UpdateUser(userID uint, avatar string) (*entity.User, error) {
+	usr, err := s.userRepo.UpdateUser(userID, avatar)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return usr, nil
 }
 
-func (s *UserService) DeleteUser(username string) error {
-	if err := s.userRepo.DeleteUser(username); err != nil {
+func (s *Service) DeleteUser(userID uint) error {
+	if err := s.userRepo.DeleteUser(userID); err != nil {
 		return err
 	}
 	return nil

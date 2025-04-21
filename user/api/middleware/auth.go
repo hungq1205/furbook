@@ -9,7 +9,12 @@ import (
 
 func MustAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		isAuth := util.RegisterAuthorizedUser(c)
+		isAuth, err := util.RegisterAuthorizedUser(c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
 		if !isAuth {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
@@ -21,7 +26,12 @@ func MustAuthMiddleware() gin.HandlerFunc {
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		util.RegisterAuthorizedUser(c)
+		_, err := util.RegisterAuthorizedUser(c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }

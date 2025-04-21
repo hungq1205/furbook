@@ -3,9 +3,10 @@ package entity
 import "time"
 
 type User struct {
-	Username string `gorm:"PrimaryKey"`
+	ID       uint `gorm:"PrimaryKey"`
+	Username string
 	Avatar   string
-	Friends  []*User `gorm:"many2many:friendship;joinForeignKey:Username;JoinReferences:Username"`
+	Friends  []*User `gorm:"many2many:friendship;joinForeignKey:ID;JoinReferences:ID"`
 }
 
 type FriendRequest struct {

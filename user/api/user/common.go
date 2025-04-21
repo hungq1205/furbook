@@ -7,12 +7,13 @@ import (
 )
 
 func UserEntityToPresenter(in *entity.User, friendSerivce friend.UseCase) (*presenter.User, error) {
-	friendNum, err := friendSerivce.CountFriends(in.Username)
+	friendNum, err := friendSerivce.CountFriends(in.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &presenter.User{
+		ID:        in.ID,
 		Username:  in.Username,
 		Avatar:    in.Avatar,
 		FriendNum: friendNum,

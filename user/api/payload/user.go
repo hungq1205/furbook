@@ -6,26 +6,27 @@ type UserCreateRequest struct {
 }
 
 type UserUpdateRequest struct {
+	UserID uint   `json:"user_id"`
 	Avatar string `json:"avatar"`
 }
 
 type UserListRequest struct {
-	Usernames []string `json:"usernames"`
+	UserIDs []uint `json:"user_ids"`
 }
 
 type CheckFriendRequest struct {
-	Username string `json:"username"`
-	Friend   string `json:"friend"`
+	UserID   uint `json:"user_id"`
+	FriendID uint `json:"friend_id"`
 }
 
 type ReceiverWrapper struct {
-	Receiver string `json:"receiver"`
+	ReceiverID uint `json:"receiver_id"`
 }
 
 type FriendWrapper struct {
-	Friend string `json:"friend"`
+	FriendID uint `json:"friend_id"`
 }
 
 type SenderWrapper struct {
-	Sender string `json:"sender"`
+	SenderID uint `json:"sender_id"`
 }
