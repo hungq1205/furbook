@@ -1,6 +1,6 @@
 package user
 
-import "user-service/entity"
+import "user/entity"
 
 type UseCase interface {
 	GetUser(userID uint) (*entity.User, error)

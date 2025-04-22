@@ -3,10 +3,11 @@ package main
 import (
 	"gateway/auth"
 	"gateway/internal"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/gin-gonic/gin"
 )
 
 type LoginOrSignUpRequest struct {

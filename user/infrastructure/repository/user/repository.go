@@ -1,7 +1,7 @@
 package user
 
 import (
-	"user-service/entity"
+	"user/entity"
 
 	"gorm.io/gorm"
 )
@@ -10,7 +10,8 @@ type UserRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
+func NewRepository(db *gorm.DB) *UserRepository {
+	db.AutoMigrate(&entity.User{})
 	return &UserRepository{
 		db: db,
 	}

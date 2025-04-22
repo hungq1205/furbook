@@ -11,6 +11,7 @@ type GroupRepository struct {
 }
 
 func NewGroupRepository(db *gorm.DB) *GroupRepository {
+	db.AutoMigrate(&entity.Group{})
 	return &GroupRepository{db: db}
 }
 
