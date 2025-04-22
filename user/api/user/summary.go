@@ -3,10 +3,10 @@ package user
 import (
 	"net/http"
 	"strconv"
-	"user-service/api/payload"
-	"user-service/usecase/friend"
-	"user-service/usecase/user"
-	"user-service/util"
+	"user/api/payload"
+	"user/usecase/friend"
+	"user/usecase/user"
+	"user/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -85,7 +85,7 @@ func UpdateUser(ctx *gin.Context, userService user.UseCase, friendService friend
 		return
 	}
 
-	usr, err := userService.UpdateUser(util.MustGetUserId(ctx), body.Avatar)
+	usr, err := userService.UpdateUser(util.MustGetUserId(ctx), body.Avatar, body.Bio)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return

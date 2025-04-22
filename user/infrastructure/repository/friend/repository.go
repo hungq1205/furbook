@@ -2,7 +2,7 @@ package friend
 
 import (
 	"errors"
-	"user-service/entity"
+	"user/entity"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +12,7 @@ type Repository struct {
 }
 
 func NewRepository(db *gorm.DB) *Repository {
+	db.AutoMigrate(&entity.User{}, &entity.FriendRequest{})
 	return &Repository{
 		db: db,
 	}

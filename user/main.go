@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"user/api/user"
 	friendRepo "user/infrastructure/repository/friend"
 	userRepo "user/infrastructure/repository/user"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -24,9 +26,9 @@ func makeHandler() *gin.Engine {
 	app.Use(gin.Logger())
 
 	dsn := "host=userdb user=postgres password=root dbname=user port=5432 sslmode=disable"
-	db, err := postgres.Open(dsn)
+	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("failed to connect database %v", err.Error()))
 	}
 
 	userRepo := userRepo.NewRepository(db)

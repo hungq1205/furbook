@@ -41,10 +41,10 @@ func (r *UserRepository) CreateUser(username string, avatar string) (*entity.Use
 	return user, nil
 }
 
-func (r *UserRepository) UpdateUser(userId uint, avatar string) (*entity.User, error) {
+func (r *UserRepository) UpdateUser(userId uint, avatar string, bio string) (*entity.User, error) {
 	if err := r.db.Model(&entity.User{}).
 		Where("id = ?", userId).
-		Update("avatar", avatar).Error; err != nil {
+		Updates(map[string]interface{}{"avatar": avatar, "bio": bio}).Error; err != nil {
 		return nil, err
 	}
 	user, err := r.GetUser(userId)

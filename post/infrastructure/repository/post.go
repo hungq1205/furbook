@@ -120,21 +120,20 @@ func (p *PostRepository) CreateBlogPost(ctx context.Context, username, content s
 	return &post, nil
 }
 
-func (p *PostRepository) CreateLostPetPost(ctx context.Context, username, content string, medias []entity.Media, petId int, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
+func (p *PostRepository) CreateLostPetPost(ctx context.Context, userId uint, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
 	post := entity.Post{
 		ID:           primitive.NewObjectID(),
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		Comments:     []entity.Comment{},
 		Interactions: []entity.Interaction{},
-		Username:     username,
+		UserID:       userId,
 		Content:      content,
 		Medias:       medias,
-		PetId:        &petId,
 		Area:         area,
 		LastSeen:     lastSeen,
 		LostAt:       lostAt,
-		Found:        false,
+		IsResolved:   false,
 	}
 
 	_, err := p.postCollection.InsertOne(ctx, post)

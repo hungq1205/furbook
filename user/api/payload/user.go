@@ -6,8 +6,9 @@ type UserCreateRequest struct {
 }
 
 type UserUpdateRequest struct {
-	UserID uint   `json:"user_id"`
-	Avatar string `json:"avatar"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+	Bio      string `json:"bio"`
 }
 
 type UserListRequest struct {

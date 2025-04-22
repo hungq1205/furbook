@@ -1,12 +1,18 @@
 package friend
 
 import (
-	"user-service/entity"
-	"user-service/infrastructure/repository/friend"
+	"user/entity"
+	"user/infrastructure/repository/friend"
 )
 
 type Service struct {
 	friendRepo *friend.Repository
+}
+
+func NewService(friendRepo *friend.Repository) *Service {
+	return &Service{
+		friendRepo: friendRepo,
+	}
 }
 
 func (s *Service) GetFriendRequests(userID uint) ([]*entity.User, error) {

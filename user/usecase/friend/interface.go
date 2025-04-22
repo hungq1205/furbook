@@ -1,13 +1,13 @@
 package friend
 
-import "user-service/entity"
+import "user/entity"
 
 type UseCase interface {
-	GetFriendRequests(userID uint) ([]*entity.FriendRequest, error)
+	GetFriendRequests(userID uint) ([]*entity.User, error)
 	CheckFriendRequest(senderID uint, receiverID uint) (bool, error)
 	SendFriendRequest(senderID uint, receiverID uint) error
 	DeleteFriendRequest(senderID uint, receiverID uint) error
-	CountFriendRequests(userID uint) (int64, error)
+	CountFriendRequests(userID uint) (int, error)
 
 	GetFriends(userID uint) ([]*entity.User, error)
 	DeleteFriend(userAID uint, userBID uint) error
