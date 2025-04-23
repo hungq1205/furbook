@@ -6,22 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="38a640ff-11bf-4deb-b8b7-07a5b8d5815d" name="Changes" comment="m">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post/entity/comment.go" beforeDir="false" afterPath="$PROJECT_DIR$/post/entity/comment.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/post/entity/interaction.go" beforeDir="false" afterPath="$PROJECT_DIR$/post/entity/interaction.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/post/entity/post.go" beforeDir="false" afterPath="$PROJECT_DIR$/post/entity/post.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/middleware/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/middleware/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/payload/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/payload/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/user/common.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/user/common.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/user/handler.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/user/handler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/api/user/summary.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/api/user/summary.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/entity/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/entity/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/infrastructure/repository/friend/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/infrastructure/repository/friend/repository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/infrastructure/repository/user/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/infrastructure/repository/user/repository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/presenter/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/presenter/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/usecase/friend/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/usecase/friend/interface.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/usecase/friend/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/usecase/friend/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/usecase/user/interface.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/usecase/user/interface.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/usecase/user/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/usecase/user/service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user/util/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/user/util/auth.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/post/usecase/post/service.go" beforeDir="false" afterPath="$PROJECT_DIR$/post/usecase/post/service.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

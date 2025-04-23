@@ -48,8 +48,8 @@ func (s *Service) CreateBlogPost(ctx context.Context, username, content string, 
 	return post, nil
 }
 
-func (s *Service) CreateLostPetPost(ctx context.Context, username, content string, medias []entity.Media, petId int, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
-	post, err := s.postRepo.CreateLostPetPost(ctx, username, content, medias, petId, area, lastSeen, lostAt)
+func (s *Service) CreateLostPetPost(ctx context.Context, userId uint, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
+	post, err := s.postRepo.CreateLostPetPost(ctx, userId, content, medias, area, lastSeen, lostAt)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func (s *Service) PatchContent(ctx context.Context, id, content string, medias [
 	return s.GetPost(ctx, id)
 }
 
-func (s *Service) PatchFound(ctx context.Context, id string, found bool) error {
-	return s.postRepo.PatchFound(ctx, id, found)
+func (s *Service) PatchLostFoundStatus(ctx context.Context, id string, isResolved bool) error {
+	return s.postRepo.PatchFound(ctx, id, isResolved)
 }
 
 func (s *Service) DeletePost(ctx context.Context, id string) error {
