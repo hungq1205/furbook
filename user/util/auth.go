@@ -2,25 +2,19 @@ package util
 
 import (
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
-func GetUserId(ctx *gin.Context) (uint, bool) {
-	username, ok := ctx.Get("userId")
-	return username.(uint), ok
+func GetUsername(ctx *gin.Context) (string, bool) {
+	username, ok := ctx.Get("username")
+	return username.(string), ok
 }
 
-func MustGetUserId(ctx *gin.Context) uint {
-	return ctx.MustGet("userId").(uint)
+func MustGetUsername(ctx *gin.Context) string {
+	return ctx.MustGet("username").(string)
 }
 
 func RegisterAuthorizedUser(ctx *gin.Context) (bool, error) {
-	userId := ctx.Request.Header.Get("X-USER-ID")
-	userIdUint, err := strconv.ParseUint(userId, 10, 32)
-	if err != nil {
-		return false, err
-	}
-
-	ctx.Set("userId", uint(userIdUint))
-	return userId == "", nil
+	username := ctx.Request.Header.Get("X-USERNAME")
+	ctx.Set("username", username)
+	return username == "", nil
 }

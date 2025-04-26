@@ -8,6 +8,6 @@ const (
 )
 
 type Interaction struct {
-	Type   InteractionType `bson:"type" json:"type"`
-	UserID uint            `bson:"userId" json:"user_id"`
+	Type     InteractionType `bson:"type" json:"type"`
+	Username string          `bson:"username" json:"username"`
 }

@@ -1,11 +1,11 @@
 package presenter
 
 type User struct {
-	ID        uint   `json:"id"`
-	Username  string `json:"username"`
-	Avatar    string `json:"avatar"`
-	Bio       string `json:"bio"`
-	FriendNum int    `json:"friend_num"`
+	Username    string `json:"username"`
+	DisplayName string `json:"displayName"`
+	Avatar      string `json:"avatar"`
+	Bio         string `json:"bio"`
+	FriendNum   int    `json:"friend_num"`
 }
 
 type FriendList struct {

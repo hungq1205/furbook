@@ -1,10 +1,11 @@
 package user
 
 import (
+	"user/api/middleware"
+	"user/usecase/friend"
+	"user/usecase/user"
+
 	"github.com/gin-gonic/gin"
-	"user-service/api/middleware"
-	"user-service/usecase/friend"
-	"user-service/usecase/user"
 )
 
 func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend.UseCase) {

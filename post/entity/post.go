@@ -17,14 +17,14 @@ const (
 type Post struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Type      PostType           `bson:"type" json:"type"`
-	UserID    uint               `bson:"userId" json:"user_id"`
+	Username  string             `bson:"userId" json:"username"`
 	Content   string             `bson:"content" json:"content"`
 	Medias    []Media            `bson:"medias" json:"medias"`
 	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt time.Time          `bson:"updatedAt" json:"updatedAt"`
 
 	Interactions []Interaction `bson:"interactions" json:"interactions"`
-	CommentNum   int           `bson:"commentNum" json:"commentNum"`
+	Comments     []Comment     `bson:"comments" json:"comments,omitempty"`
 
 	// Optional: Lost Found Post
 	LostAt       *time.Time `bson:"lostAt,omitempty" json:"lostAt,omitempty"`
@@ -32,7 +32,7 @@ type Post struct {
 	LastSeen     *Location  `bson:"lastSeen,omitempty" json:"lastSeen,omitempty"`
 	ContactInfo  string     `bson:"contactInfo,omitempty" json:"contactInfo,omitempty"`
 	IsResolved   bool       `bson:"found,omitempty" json:"found,omitempty"`
-	Participants []uint     `bson:"participants,omitempty" json:"participants,omitempty"`
+	Participants []string   `bson:"participants,omitempty" json:"participants,omitempty"`
 }
 
 type Location struct {

@@ -3,16 +3,16 @@ package post
 import (
 	"context"
 	"post/entity"
-	"post/infrastructure/repository"
+	"post/infrastructure/repository/post"
 	"post/util"
 	"time"
 )
 
 type Service struct {
-	postRepo *repository.PostRepository
+	postRepo *post.Repository
 }
 
-func NewService(postRepo *repository.PostRepository) *Service {
+func NewService(postRepo *post.Repository) *Service {
 	return &Service{
 		postRepo: postRepo,
 	}
@@ -48,23 +48,23 @@ func (s *Service) CreateBlogPost(ctx context.Context, username, content string, 
 	return post, nil
 }
 
-func (s *Service) CreateLostPetPost(ctx context.Context, userId uint, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
-	post, err := s.postRepo.CreateLostPetPost(ctx, userId, content, medias, area, lastSeen, lostAt)
+func (s *Service) CreateLostPetPost(ctx context.Context, username, contactInfo string, postType entity.PostType, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
+	post, err := s.postRepo.CreateLostPetPost(ctx, username, contactInfo, postType, content, medias, area, lastSeen, lostAt)
 	if err != nil {
 		return nil, err
 	}
 	return post, nil
 }
 
-func (s *Service) PatchContent(ctx context.Context, id, content string, medias []entity.Media) (*entity.Post, error) {
+func (s *Service) PatchContent(ctx context.Context, id, content string, medias []entity.Media) error {
 	ok, err := s.postRepo.PatchContent(ctx, id, content, medias)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	if !ok {
-		return nil, nil
+		return nil
 	}
-	return s.GetPost(ctx, id)
+	return nil
 }
 
 func (s *Service) PatchLostFoundStatus(ctx context.Context, id string, isResolved bool) error {

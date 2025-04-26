@@ -1,4 +1,4 @@
-package repository
+package post
 
 import (
 	"context"
@@ -13,17 +13,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type PostRepository struct {
+type Repository struct {
 	postCollection *mongo.Collection
 }
 
-func NewPostRepository(db *mongo.Database) *PostRepository {
-	return &PostRepository{postCollection: db.Collection("post")}
+func NewRepository(db *mongo.Database) *Repository {
+	return &Repository{postCollection: db.Collection("post")}
 }
 
 // Post
 
-func (p *PostRepository) GetPost(ctx context.Context, id string) (*entity.Post, error) {
+func (p *Repository) GetPost(ctx context.Context, id string) (*entity.Post, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -39,10 +39,10 @@ func (p *PostRepository) GetPost(ctx context.Context, id string) (*entity.Post, 
 	return &post, nil
 }
 
-func (p *PostRepository) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
+func (p *Repository) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
 	var posts []*entity.Post
 
-	opts := options.Find().SetSort(bson.D{{"createdAt", -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
+	opts := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
 	cursor, err := p.postCollection.Find(ctx, bson.M{"username": username}, opts)
 	if err != nil {
 		return nil, err
@@ -56,10 +56,10 @@ func (p *PostRepository) GetPostsOfUser(ctx context.Context, username string, pa
 	return posts, nil
 }
 
-func (p *PostRepository) GetPostsOfUsers(ctx context.Context, usernames []string, pagination util.Pagination) ([]*entity.Post, error) {
+func (p *Repository) GetPostsOfUsers(ctx context.Context, usernames []string, pagination util.Pagination) ([]*entity.Post, error) {
 	var posts []*entity.Post
 
-	sortOpts := options.Find().SetSort(bson.D{{"createdAt", -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
+	sortOpts := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
 	cursor, err := p.postCollection.Find(ctx, bson.M{"username": bson.M{"$in": usernames}}, sortOpts)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (p *PostRepository) GetPostsOfUsers(ctx context.Context, usernames []string
 	return posts, nil
 }
 
-func (p *PostRepository) GetMediasOfPost(ctx context.Context, postID string) ([]entity.Media, error) {
+func (p *Repository) GetMediasOfPost(ctx context.Context, postID string) ([]entity.Media, error) {
 	objectID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (p *PostRepository) GetMediasOfPost(ctx context.Context, postID string) ([]
 	return medias, nil
 }
 
-func (p *PostRepository) CheckOwnership(ctx context.Context, postID string, username string) (bool, error) {
+func (p *Repository) CheckOwnership(ctx context.Context, postID string, username string) (bool, error) {
 	objectID, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
 		return false, err
@@ -100,14 +100,15 @@ func (p *PostRepository) CheckOwnership(ctx context.Context, postID string, user
 	return count > 0, nil
 }
 
-func (p *PostRepository) CreateBlogPost(ctx context.Context, username, content string, medias []entity.Media) (*entity.Post, error) {
+func (p *Repository) CreateBlogPost(ctx context.Context, username, content string, medias []entity.Media) (*entity.Post, error) {
 	post := entity.Post{
 		ID:           primitive.NewObjectID(),
+		Username:     username,
+		Type:         entity.Blog,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		Comments:     []entity.Comment{},
 		Interactions: []entity.Interaction{},
-		Username:     username,
 		Content:      content,
 		Medias:       medias,
 	}
@@ -120,16 +121,20 @@ func (p *PostRepository) CreateBlogPost(ctx context.Context, username, content s
 	return &post, nil
 }
 
-func (p *PostRepository) CreateLostPetPost(ctx context.Context, userId uint, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
+func (p *Repository) CreateLostPetPost(ctx context.Context, username string, contactInfo string, postType entity.PostType, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
 	post := entity.Post{
 		ID:           primitive.NewObjectID(),
+		Username:     username,
+		Type:         postType,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		Comments:     []entity.Comment{},
 		Interactions: []entity.Interaction{},
-		UserID:       userId,
 		Content:      content,
 		Medias:       medias,
+
+		Participants: []string{},
+		ContactInfo:  contactInfo,
 		Area:         area,
 		LastSeen:     lastSeen,
 		LostAt:       lostAt,
@@ -144,7 +149,7 @@ func (p *PostRepository) CreateLostPetPost(ctx context.Context, userId uint, con
 	return &post, nil
 }
 
-func (p *PostRepository) PatchContent(ctx context.Context, id, content string, medias []entity.Media) (bool, error) {
+func (p *Repository) PatchContent(ctx context.Context, id, content string, medias []entity.Media) (bool, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return false, err
@@ -165,7 +170,7 @@ func (p *PostRepository) PatchContent(ctx context.Context, id, content string, m
 	return result.MatchedCount == 0, nil
 }
 
-func (p *PostRepository) PatchFound(ctx context.Context, id string, found bool) error {
+func (p *Repository) PatchFound(ctx context.Context, id string, found bool) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -174,7 +179,7 @@ func (p *PostRepository) PatchFound(ctx context.Context, id string, found bool) 
 	return err
 }
 
-func (p *PostRepository) DeletePost(ctx context.Context, id string) error {
+func (p *Repository) DeletePost(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -185,7 +190,7 @@ func (p *PostRepository) DeletePost(ctx context.Context, id string) error {
 
 // Comment
 
-func (p *PostRepository) GetComments(ctx context.Context, postId string) ([]entity.Comment, error) {
+func (p *Repository) GetComments(ctx context.Context, postId string) ([]entity.Comment, error) {
 	postOID, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return nil, err
@@ -201,7 +206,7 @@ func (p *PostRepository) GetComments(ctx context.Context, postId string) ([]enti
 	return result.Comments, nil
 }
 
-func (p *PostRepository) CreateComment(ctx context.Context, postId, username, content string) error {
+func (p *Repository) CreateComment(ctx context.Context, postId, username, content string) error {
 	postOID, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return err
@@ -221,7 +226,7 @@ func (p *PostRepository) CreateComment(ctx context.Context, postId, username, co
 	return nil
 }
 
-func (p *PostRepository) DeleteComment(ctx context.Context, postId, username string) error {
+func (p *Repository) DeleteComment(ctx context.Context, postId, username string) error {
 	postOID, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return err
@@ -238,7 +243,7 @@ func (p *PostRepository) DeleteComment(ctx context.Context, postId, username str
 
 // Interaction
 
-func (p *PostRepository) UpsertInteraction(ctx context.Context, postId, username string, itype entity.InteractionType) error {
+func (p *Repository) UpsertInteraction(ctx context.Context, postId, username string, itype entity.InteractionType) error {
 	postOID, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return err
@@ -262,7 +267,7 @@ func (p *PostRepository) UpsertInteraction(ctx context.Context, postId, username
 	return err
 }
 
-func (p *PostRepository) updateInteraction(ctx context.Context, id primitive.ObjectID, itype entity.InteractionType) (bool, error) {
+func (p *Repository) updateInteraction(ctx context.Context, id primitive.ObjectID, itype entity.InteractionType) (bool, error) {
 	result, err := p.postCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{
 		"$push": bson.M{
 			"interactions": bson.M{
@@ -276,7 +281,7 @@ func (p *PostRepository) updateInteraction(ctx context.Context, id primitive.Obj
 	return result.MatchedCount > 0, nil
 }
 
-func (p *PostRepository) DeleteInteraction(ctx context.Context, postId, username string) error {
+func (p *Repository) DeleteInteraction(ctx context.Context, postId, username string) error {
 	postOID, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return err

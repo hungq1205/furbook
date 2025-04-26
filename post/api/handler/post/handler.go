@@ -1,29 +1,30 @@
 package post
 
 import (
+	"post/api/client"
 	"post/api/middleware"
 	"post/usecase/post"
 
 	"github.com/gin-gonic/gin"
 )
 
-func MakeHandler(app *gin.Engine, postService *post.Service) {
+func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.UserClient) {
 	postGroup := app.Group("/api/post")
 	{
 		postGroup.GET("/:postID", func(c *gin.Context) {
-			GetPost(c, postService)
+			GetPost(c, postService, userClient)
 		})
 
 		postGroup.GET("/ofuser/:username", func(c *gin.Context) {
-			GetPostsOfUser(c, postService)
+			GetPostsOfUser(c, postService, userClient)
 		})
 
 		postGroup.GET("/ofUsers", func(c *gin.Context) {
-			GetPostsOfUsers(c, postService)
+			GetPostsOfUsers(c, postService, userClient)
 		})
 
 		postGroup.GET("/:postID/comments", func(c *gin.Context) {
-			GetComments(c, postService)
+			GetComments(c, postService, userClient)
 		})
 
 		authGroup := postGroup.Group("", middleware.MustAuthorizeMiddleware())
@@ -40,8 +41,8 @@ func MakeHandler(app *gin.Engine, postService *post.Service) {
 			PatchContentPost(c, postService)
 		})
 
-		authGroup.PATCH("/:postID/found", func(c *gin.Context) {
-			PatchFoundPost(c, postService)
+		authGroup.PATCH("/:postID/lostFoundStatus", func(c *gin.Context) {
+			PatchLostFoundStatus(c, postService)
 		})
 
 		authGroup.DELETE("", func(c *gin.Context) {

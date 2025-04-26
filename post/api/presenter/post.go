@@ -1,29 +1,30 @@
 package presenter
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"post/entity"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type textPostType string
+type TextPostType string
 
 const (
-	Blog  textPostType = "blog"
-	Lost  textPostType = "lost"
-	Found textPostType = "found"
+	Blog  TextPostType = "blog"
+	Lost  TextPostType = "lost"
+	Found TextPostType = "found"
 )
 
 type Post struct {
-	ID         primitive.ObjectID `json:"id"`
-	Type       textPostType       `json:"type"`
-	UserID     uint               `json:"userId"`
-	Username   string             `json:"username"`
-	UserAvatar string             `json:"userAvatar"`
-	Content    string             `json:"content"`
-	Medias     []entity.Media     `json:"medias"`
-	CreatedAt  time.Time          `json:"createdAt"`
-	UpdatedAt  time.Time          `json:"updatedAt"`
+	ID          primitive.ObjectID `json:"id"`
+	Type        TextPostType       `json:"type"`
+	Username    string             `json:"username"`
+	DisplayName string             `json:"displayName"`
+	UserAvatar  string             `json:"userAvatar"`
+	Content     string             `json:"content"`
+	Medias      []entity.Media     `json:"medias"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt"`
 
 	Interactions []entity.Interaction `json:"interactions"`
 	CommentNum   int                  `json:"commentNum"`
@@ -34,5 +35,13 @@ type Post struct {
 	LastSeen     *entity.Location `json:"lastSeen,omitempty"`
 	ContactInfo  string           `json:"contactInfo,omitempty"`
 	IsResolved   bool             `json:"isResolved,omitempty"`
-	Participants []uint           `json:"participants,omitempty"`
+	Participants []string         `json:"participants,omitempty"`
+}
+
+type Comment struct {
+	Username    string    `json:"username"`
+	DisplayName string    `json:"displayName"`
+	Avatar      string    `json:"avatar"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"createdAt"`
 }

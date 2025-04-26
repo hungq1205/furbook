@@ -3,9 +3,9 @@ package user
 import "user/entity"
 
 type UseCase interface {
-	GetUser(userID uint) (*entity.User, error)
-	GetUsers(userIDs []uint) ([]*entity.User, error)
+	GetUser(username string) (*entity.User, error)
+	GetUsers(usernames []string) ([]*entity.User, error)
 	CreateUser(username string, avatar string) (*entity.User, error)
-	UpdateUser(userID uint, avatar string, bio string) (*entity.User, error)
-	DeleteUser(userID uint) error
+	UpdateUser(username string, avatar string, bio string) (*entity.User, error)
+	DeleteUser(username string) error
 }

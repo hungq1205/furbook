@@ -13,7 +13,7 @@ type UseCase interface {
 	GetPostsOfUsers(ctx context.Context, usernames []string, pagination util.Pagination) ([]*entity.Post, error)
 	CheckOwnership(ctx context.Context, username, postId string) (bool, error)
 	CreateBlogPost(ctx context.Context, username, content string, medias []entity.Media) (*entity.Post, error)
-	CreateLostPetPost(ctx context.Context, username, content string, petId int, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error)
+	CreateLostPetPost(ctx context.Context, username, contactInfo string, postType entity.PostType, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error)
 	PatchContent(ctx context.Context, id, content string, medias []entity.Media) (*entity.Post, error)
 	PatchFound(ctx context.Context, id string, found bool) error
 	DeletePost(ctx context.Context, id string) error

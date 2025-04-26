@@ -2,6 +2,7 @@ package post
 
 import (
 	"net/http"
+	"post/api/client"
 	"post/api/payload"
 	"post/usecase/post"
 	"post/util"
@@ -9,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetPost(c *gin.Context, postService *post.Service) {
+func GetPost(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	ctx := c.Request.Context()
 	postID := c.Param("postID")
 	postObj, err := postService.GetPost(ctx, postID)
@@ -17,10 +18,17 @@ func GetPost(c *gin.Context, postService *post.Service) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	c.JSON(http.StatusOK, postObj)
+
+	pPost, err := PostEntityToPresenterWithClient(postObj, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, pPost)
 }
 
-func GetPostsOfUser(c *gin.Context, postService *post.Service) {
+func GetPostsOfUser(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	ctx := c.Request.Context()
 	username := c.Param("username")
 	pagination := util.ExtractPagination(c)
@@ -31,10 +39,16 @@ func GetPostsOfUser(c *gin.Context, postService *post.Service) {
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	pPosts, err := ListPostEntityToPresenterWithClient(posts, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": pPosts})
 }
 
-func GetPostsOfUsers(c *gin.Context, postService *post.Service) {
+func GetPostsOfUsers(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	var body payload.UsersPostsRequest
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
@@ -50,7 +64,13 @@ func GetPostsOfUsers(c *gin.Context, postService *post.Service) {
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	pPosts, err := ListPostEntityToPresenterWithClient(posts, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": pPosts})
 }
 
 func CreateBlogPost(c *gin.Context, postService *post.Service) {
@@ -69,20 +89,28 @@ func CreateBlogPost(c *gin.Context, postService *post.Service) {
 	c.JSON(http.StatusCreated, newPost)
 }
 
-func CreateLostPetPost(c *gin.Context, postService *post.Service) {
+func CreateLostPetPost(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	var body payload.CreateLostPetPostPayload
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
+	username := util.MustGetUsername(c)
 
 	ctx := c.Request.Context()
-	newPost, err := postService.CreateLostPetPost(ctx, util.MustGetUsername(c), body.Content, body.Medias, body.PetId, &body.Area, &body.LastSeen, body.LostAt)
+	newPost, err := postService.CreateLostPetPost(ctx, username, body.ContactInfo, PostTypeToInt(body.Type), body.Content, body.Medias, &body.Area, &body.LastSeen, body.LostAt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	c.JSON(http.StatusCreated, newPost)
+
+	pPost, err := PostEntityToPresenterWithClient(newPost, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, pPost)
 }
 
 func PatchContentPost(c *gin.Context, postService *post.Service) {
@@ -91,9 +119,10 @@ func PatchContentPost(c *gin.Context, postService *post.Service) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
+	username := util.MustGetUsername(c)
 
 	ctx := c.Request.Context()
-	isOwner, err := postService.CheckOwnership(ctx, util.MustGetUsername(c), c.Param("postID"))
+	isOwner, err := postService.CheckOwnership(ctx, username, c.Param("postID"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
@@ -103,16 +132,16 @@ func PatchContentPost(c *gin.Context, postService *post.Service) {
 		return
 	}
 
-	pPost, err := postService.PatchContent(ctx, c.Param("postID"), body.Content, body.Medias)
-	if err != nil {
+	if postService.PatchContent(ctx, c.Param("postID"), body.Content, body.Medias) != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	c.JSON(http.StatusOK, pPost)
+
+	c.Status(http.StatusOK)
 }
 
-func PatchFoundPost(c *gin.Context, postService *post.Service) {
-	var body payload.PatchFoundPayload
+func PatchLostFoundStatus(c *gin.Context, postService *post.Service) {
+	var body payload.PatchLostFoundStatus
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
@@ -129,7 +158,7 @@ func PatchFoundPost(c *gin.Context, postService *post.Service) {
 		return
 	}
 
-	err = postService.PatchFound(ctx, c.Param("postID"), body.Found)
+	err = postService.PatchLostFoundStatus(ctx, c.Param("postID"), body.IsResolved)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
@@ -162,14 +191,21 @@ func DeletePost(c *gin.Context, postService *post.Service) {
 	c.Status(http.StatusNoContent)
 }
 
-func GetComments(c *gin.Context, postService *post.Service) {
+func GetComments(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	ctx := c.Request.Context()
 	comments, err := postService.GetComments(ctx, c.Param("postID"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	c.JSON(http.StatusOK, comments)
+
+	pComments, err := ListCommentEntityToPresenterWithClient(comments, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting comments: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"comments": pComments})
 }
 
 func CreateComment(c *gin.Context, postService *post.Service) {

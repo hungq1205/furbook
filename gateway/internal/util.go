@@ -1,9 +1,10 @@
 package internal
 
 import (
+	"log"
+
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 )
 
 var secretKey = []byte("as you have seen, a very secret key")

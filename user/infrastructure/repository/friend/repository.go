@@ -17,9 +17,10 @@ func NewRepository(db *gorm.DB) *Repository {
 		db: db,
 	}
 }
-func (r *Repository) GetFriends(userID uint) ([]*entity.User, error) {
+
+func (r *Repository) GetFriends(username string) ([]*entity.User, error) {
 	var user entity.User
-	if err := r.db.Preload("Friends").Where("id = ?", userID).First(&user).Error; err != nil {
+	if err := r.db.Preload("Friends").Where("username = ?", username).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return []*entity.User{}, nil
 		}
@@ -28,25 +29,26 @@ func (r *Repository) GetFriends(userID uint) ([]*entity.User, error) {
 	return user.Friends, nil
 }
 
-func (r *Repository) GetFriendUserIDs(userID uint) ([]uint, error) {
-	friendIDs := []uint{}
+func (r *Repository) GetFriendUsernames(username string) ([]string, error) {
+	friendUsernames := []string{}
 	if err := r.db.
-		Table("friendship").
-		Where("user_id = ?", userID).
-		Pluck("friend_id", &friendIDs).
+		Table("friendship f").
+		Select("f.friend_name").
+		Where("f.username = ?", username).
+		Pluck("friend_name", &friendUsernames).
 		Error; err != nil {
 		return nil, err
 	}
-	return friendIDs, nil
+	return friendUsernames, nil
 }
 
-func (r *Repository) GetFriendRequests(userID uint) ([]*entity.User, error) {
+func (r *Repository) GetFriendRequests(username string) ([]*entity.User, error) {
 	var reqUsers []*entity.User
 	err := r.db.
 		Table("friend_request fr").
 		Select("u.*").
-		Joins("JOIN user u ON fr.sender_id = u.id").
-		Where("fr.receiver_id = ?", userID).
+		Joins("JOIN user u ON fr.sender = u.username").
+		Where("fr.receiver = ?", username).
 		Find(&reqUsers).Error
 	if err != nil {
 		return nil, err
@@ -54,71 +56,71 @@ func (r *Repository) GetFriendRequests(userID uint) ([]*entity.User, error) {
 	return reqUsers, nil
 }
 
-func (r *Repository) CountFriendRequests(userID uint) (int64, error) {
+func (r *Repository) CountFriendRequests(username string) (int64, error) {
 	var count int64
 	if err := r.db.Table("friend_request").
-		Where("receiver_id = ?", userID).
+		Where("receiver = ?", username).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (r *Repository) CountFriends(userID uint) (int64, error) {
+func (r *Repository) CountFriends(username string) (int64, error) {
 	var count int64
 	if err := r.db.Table("friendship").
-		Where("user_id = ?", userID).
+		Where("username = ?", username).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (r *Repository) CheckFriendship(userAID uint, userBID uint) (bool, error) {
+func (r *Repository) CheckFriendship(userA string, userB string) (bool, error) {
 	var count int64
 	if err := r.db.Table("friendship").
-		Where("user_id = ? AND friend_id = ?", userAID, userBID).
+		Where("username = ? AND friend_name = ?", userA, userB).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
-func (r *Repository) CheckFriendRequest(senderID uint, receiverID uint) (bool, error) {
+func (r *Repository) CheckFriendRequest(senderName string, receiverName string) (bool, error) {
 	var count int64
 	if err := r.db.Table("friend_request").
-		Where("sender_id = ? AND receiver_id = ?", senderID, receiverID).
+		Where("sender = ? AND receiver = ?", senderName, receiverName).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
-func (r *Repository) AddFriend(userID uint, friendID uint) error {
-	if err := r.db.Exec("INSERT INTO friendship (user_id, friend_id) VALUES (?, ?), (?, ?)",
-		userID, friendID, friendID, userID).Error; err != nil {
+func (r *Repository) AddFriend(username string, friendName string) error {
+	if err := r.db.Exec("INSERT INTO friendship (username, friend_name) VALUES (?, ?), (?, ?)",
+		username, friendName, friendName, username).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Repository) DeleteFriend(userID uint, friendID uint) error {
-	if err := r.db.Exec("DELETE FROM friendship WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
-		userID, friendID, friendID, userID).Error; err != nil {
+func (r *Repository) DeleteFriend(username string, friendName string) error {
+	if err := r.db.Exec("DELETE FROM friendship WHERE (username = ? AND friend_name = ?) OR (username = ? AND friend_name = ?)",
+		username, friendName, friendName, username).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Repository) SendFriendRequest(senderID uint, receiverID uint) error {
-	if err := r.db.Exec("INSERT INTO friend_request (sender_id, receiver_id) VALUES (?, ?)", senderID, receiverID).Error; err != nil {
+func (r *Repository) SendFriendRequest(senderName string, receiverName string) error {
+	if err := r.db.Exec("INSERT INTO friend_request (sender, receiver) VALUES (?, ?)", senderName, receiverName).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Repository) DeleteFriendRequest(senderID uint, receiverID uint) error {
-	if err := r.db.Exec("DELETE FROM friend_request WHERE sender_id = ? AND receiver_id = ?", senderID, receiverID).Error; err != nil {
+func (r *Repository) DeleteFriendRequest(senderName string, receiverName string) error {
+	if err := r.db.Exec("DELETE FROM friend_request WHERE sender = ? AND receiver = ?", senderName, receiverName).Error; err != nil {
 		return err
 	}
 	return nil

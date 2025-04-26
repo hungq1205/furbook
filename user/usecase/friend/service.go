@@ -15,20 +15,20 @@ func NewService(friendRepo *friend.Repository) *Service {
 	}
 }
 
-func (s *Service) GetFriendRequests(userID uint) ([]*entity.User, error) {
-	reqUsers, err := s.friendRepo.GetFriendRequests(userID)
+func (s *Service) GetFriendRequests(username string) ([]*entity.User, error) {
+	reqUsers, err := s.friendRepo.GetFriendRequests(username)
 	if err != nil {
 		return nil, err
 	}
 	return reqUsers, nil
 }
 
-func (s *Service) CheckFriendRequest(senderID uint, receiverID uint) (bool, error) {
-	return s.friendRepo.CheckFriendRequest(senderID, receiverID)
+func (s *Service) CheckFriendRequest(senderName string, receiverName string) (bool, error) {
+	return s.friendRepo.CheckFriendRequest(senderName, receiverName)
 }
 
-func (s *Service) SendFriendRequest(senderID uint, receiverID uint) error {
-	friendExists, err := s.friendRepo.CheckFriendship(senderID, receiverID)
+func (s *Service) SendFriendRequest(senderName string, receiverName string) error {
+	friendExists, err := s.friendRepo.CheckFriendship(senderName, receiverName)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (s *Service) SendFriendRequest(senderID uint, receiverID uint) error {
 		return nil
 	}
 
-	friendReqExists, err := s.friendRepo.CheckFriendRequest(senderID, receiverID)
+	friendReqExists, err := s.friendRepo.CheckFriendRequest(senderName, receiverName)
 	if err != nil {
 		return err
 	}
@@ -44,19 +44,19 @@ func (s *Service) SendFriendRequest(senderID uint, receiverID uint) error {
 		return nil
 	}
 
-	isReciprocal, err := s.friendRepo.CheckFriendRequest(receiverID, senderID)
+	isReciprocal, err := s.friendRepo.CheckFriendRequest(receiverName, senderName)
 	if err != nil {
 		return err
 	}
 	if isReciprocal {
-		if err := s.friendRepo.DeleteFriendRequest(receiverID, senderID); err != nil {
+		if err := s.friendRepo.DeleteFriendRequest(receiverName, senderName); err != nil {
 			return err
 		}
-		if err := s.friendRepo.AddFriend(senderID, receiverID); err != nil {
+		if err := s.friendRepo.AddFriend(senderName, receiverName); err != nil {
 			return err
 		}
 	} else {
-		if err := s.friendRepo.SendFriendRequest(senderID, receiverID); err != nil {
+		if err := s.friendRepo.SendFriendRequest(senderName, receiverName); err != nil {
 			return err
 		}
 	}
@@ -64,42 +64,42 @@ func (s *Service) SendFriendRequest(senderID uint, receiverID uint) error {
 	return nil
 }
 
-func (s *Service) DeleteFriendRequest(senderID uint, receiverID uint) error {
-	if err := s.friendRepo.DeleteFriendRequest(senderID, receiverID); err != nil {
+func (s *Service) DeleteFriendRequest(senderName string, receiverName string) error {
+	if err := s.friendRepo.DeleteFriendRequest(senderName, receiverName); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Service) CountFriendRequests(userID uint) (int, error) {
-	count, err := s.friendRepo.CountFriendRequests(userID)
+func (s *Service) CountFriendRequests(username string) (int, error) {
+	count, err := s.friendRepo.CountFriendRequests(username)
 	if err != nil {
 		return 0, err
 	}
 	return int(count), nil
 }
 
-func (s *Service) GetFriends(userID uint) ([]*entity.User, error) {
-	friends, err := s.friendRepo.GetFriends(userID)
+func (s *Service) GetFriends(username string) ([]*entity.User, error) {
+	friends, err := s.friendRepo.GetFriends(username)
 	if err != nil {
 		return nil, err
 	}
 	return friends, nil
 }
 
-func (s *Service) CheckFriendship(userAID uint, userBID uint) (bool, error) {
-	return s.friendRepo.CheckFriendship(userAID, userBID)
+func (s *Service) CheckFriendship(userA string, userBName string) (bool, error) {
+	return s.friendRepo.CheckFriendship(userA, userBName)
 }
 
-func (s *Service) DeleteFriend(userAID uint, userBID uint) error {
-	if err := s.friendRepo.DeleteFriend(userAID, userBID); err != nil {
+func (s *Service) DeleteFriend(userA string, userBName string) error {
+	if err := s.friendRepo.DeleteFriend(userA, userBName); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Service) CountFriends(userID uint) (int, error) {
-	count, err := s.friendRepo.CountFriends(userID)
+func (s *Service) CountFriends(username string) (int, error) {
+	count, err := s.friendRepo.CountFriends(username)
 	if err != nil {
 		return 0, err
 	}

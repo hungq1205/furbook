@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"gateway/internal"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

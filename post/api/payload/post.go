@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"post/api/presenter"
 	"post/entity"
 	"time"
 )
@@ -15,13 +16,14 @@ type CreateBlogPostPayload struct {
 }
 
 type CreateLostPetPostPayload struct {
-	Content string         `json:"content"`
-	Medias  []entity.Media `json:"medias"`
+	Type    presenter.TextPostType `json:"type"`
+	Content string                 `json:"content"`
+	Medias  []entity.Media         `json:"medias"`
 
-	PetId    int             `json:"petId"`
-	LostAt   *time.Time      `json:"lostAt"`
-	Area     entity.Location `json:"area"`
-	LastSeen entity.Location `json:"lastSeen"`
+	ContactInfo string          `json:"contactInfo"`
+	LostAt      *time.Time      `json:"lostAt"`
+	Area        entity.Location `json:"area"`
+	LastSeen    entity.Location `json:"lastSeen"`
 }
 
 type PatchContentPayload struct {
@@ -29,8 +31,8 @@ type PatchContentPayload struct {
 	Medias  []entity.Media `json:"medias"`
 }
 
-type PatchFoundPayload struct {
-	Found bool `json:"found"`
+type PatchLostFoundStatus struct {
+	IsResolved bool `json:"isResolved"`
 }
 
 type DeletePostPayload struct {
