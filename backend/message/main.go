@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func makeHandler() *gin.Engine {
 	app.Use(gin.Recovery())
 
 	dsn := "host=messagedb user=postgres password=root dbname=message port=5432 sslmode=disable"
-	db, err := postgres.Open(dsn)
+	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		panic(err)
 	}

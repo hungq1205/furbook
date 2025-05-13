@@ -59,11 +59,11 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 			SendFriendRequest(c, friendService)
 		})
 
-		authGroup.DELETE("/friend-requests", func(c *gin.Context) {
+		authGroup.DELETE("/friend-requests/revoke", func(c *gin.Context) {
 			DeleteFriendRequest(c, friendService)
 		})
 
-		authGroup.DELETE("/friend-requests", func(c *gin.Context) {
+		authGroup.DELETE("/friend-requests/decline", func(c *gin.Context) {
 			DeleteIncomingFriendRequest(c, friendService)
 		})
 	}

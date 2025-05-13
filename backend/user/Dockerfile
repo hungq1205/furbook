@@ -1,4 +1,4 @@
-FROM golang:1.22.5-alpine
+FROM golang:1.24.1-alpine
 EXPOSE 8080
 WORKDIR /app
 COPY go.mod go.sum ./
