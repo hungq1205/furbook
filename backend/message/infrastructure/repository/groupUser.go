@@ -41,6 +41,7 @@ func (r *GroupUserRepository) GetUsersInGroup(groupID int) ([]string, error) {
 func (r *GroupUserRepository) GetGroupsOfUser(username string, pagination util.Pagination) ([]*entity.Group, error) {
 	var groups []*entity.Group
 	err := r.db.
+		Model(&entity.GroupUser{}).
 		Joins("join groups g on g.id = group_users.group_id").
 		Where("username = ?", username).
 		Select("g.*").
