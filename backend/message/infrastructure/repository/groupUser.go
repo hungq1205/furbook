@@ -13,7 +13,7 @@ type GroupUserRepository struct {
 }
 
 func NewGroupUserRepository(db *gorm.DB) *GroupUserRepository {
-	db.AutoMigrate(&entity.Group{})
+	db.AutoMigrate(&entity.GroupUser{})
 	return &GroupUserRepository{db: db}
 }
 

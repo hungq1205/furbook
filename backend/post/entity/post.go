@@ -17,7 +17,7 @@ const (
 type Post struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Type      PostType           `bson:"type" json:"type"`
-	Username  string             `bson:"userId" json:"username"`
+	Username  string             `bson:"username" json:"username"`
 	Content   string             `bson:"content" json:"content"`
 	Medias    []Media            `bson:"medias" json:"medias"`
 	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
@@ -31,14 +31,11 @@ type Post struct {
 	Area         *Location  `bson:"area,omitempty" json:"area,omitempty"`
 	LastSeen     *Location  `bson:"lastSeen,omitempty" json:"lastSeen,omitempty"`
 	ContactInfo  string     `bson:"contactInfo,omitempty" json:"contactInfo,omitempty"`
-	IsResolved   bool       `bson:"found,omitempty" json:"found,omitempty"`
+	IsResolved   bool       `bson:"isResolved,omitempty" json:"isResolved,omitempty"`
 	Participants []string   `bson:"participants,omitempty" json:"participants,omitempty"`
 }
 
 type Location struct {
-	Country  string `bson:"country" json:"country"`
-	Province string `bson:"province" json:"province"`
-	Ward     string `bson:"ward" json:"ward"`
-	Street   string `bson:"street" json:"street"`
-	Details  string `bson:"details" json:"details"`
+	Longitude float32 `bson:"longitude" json:"longitude"`
+	Latitude  float32 `bson:"latitude" json:"latitude"`
 }

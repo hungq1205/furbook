@@ -19,16 +19,13 @@ type Repository struct {
 
 func NewAuthRepository(dsn string) (*Repository, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db.AutoMigrate(&User{})
 	if err != nil {
 		return nil, err
 	}
 	return &Repository{
 		db: db,
 	}, nil
-}
-
-func (r *Repository) Migrate() error {
-	return r.db.AutoMigrate(&User{})
 }
 
 func (r *Repository) Authenticate(username, password string) (bool, error) {
