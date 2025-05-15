@@ -23,11 +23,11 @@ func main() {
 func makeHandler() *gin.Engine {
 	app := gin.New()
 
-	mongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://postdb:27017"))
+	mongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://:admin123@postdb:27017"))
 	if err != nil {
 		panic(err)
 	}
-	mongoDB := mongoClient.Database("post")
+	mongoDB := mongoClient.Database("auth")
 
 	postRepo := postRepo.NewRepository(mongoDB)
 	postService := postService.NewService(postRepo)

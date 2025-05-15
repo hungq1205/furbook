@@ -18,7 +18,7 @@ type Repository struct {
 }
 
 func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{postCollection: db.Collection("post")}
+	return &Repository{postCollection: db.Collection("posts")}
 }
 
 // Post
