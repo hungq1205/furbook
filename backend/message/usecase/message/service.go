@@ -2,10 +2,11 @@ package message
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"message/entity"
 	"message/infrastructure/repository"
 	"message/util"
+
+	"gorm.io/gorm"
 )
 
 type Service struct {
@@ -69,4 +70,15 @@ func (s *Service) GetGroupMessageList(groupID int, pagination util.Pagination) (
 		return nil, err
 	}
 	return messages, nil
+}
+
+func (s *Service) GetLastMessage(groupID int) (*entity.Message, error) {
+	msg, err := s.messageRepo.GetLastMessage(groupID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return msg, nil
 }

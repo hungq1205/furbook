@@ -43,7 +43,7 @@ func (r *Repository) Authenticate(username, password string) (bool, error) {
 
 func (r *Repository) GetUser(username string) (*User, error) {
 	var user User
-	err := r.db.First(&user, username).Error
+	err := r.db.Where("username = ?", username).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}

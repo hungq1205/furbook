@@ -34,14 +34,16 @@ func (s *Service) UpdateGroup(groupID int, groupName string) (*entity.Group, err
 	return group, nil
 }
 
-func (s *Service) CreateGroup(username string, groupName string) (*entity.Group, error) {
-	group, err := s.groupRepo.CreateGroup(&entity.Group{OwnerName: username, Name: groupName})
+func (s *Service) CreateGroup(ownername string, groupName string, members []string) (*entity.Group, error) {
+	group, err := s.groupRepo.CreateGroup(&entity.Group{OwnerName: ownername, Name: groupName})
 	if err != nil {
 		return nil, err
 	}
-	err = s.groupUserRepo.AddUserToGroup(group.ID, username)
-	if err != nil {
-		return nil, err
+	for _, member := range members {
+		err = s.groupUserRepo.AddUserToGroup(group.ID, member)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return group, nil
 }

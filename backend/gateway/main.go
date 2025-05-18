@@ -2,27 +2,40 @@ package main
 
 import (
 	"gateway/auth"
+	"gateway/client"
 	"gateway/internal"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	messageServiceURL string = os.Getenv("MESSAGE_SERVICE_URL")
+	postServiceURL    string = os.Getenv("POST_SERVICE_URL")
+	userServiceURL    string = os.Getenv("USER_SERVICE_URL")
+)
+
 type LoginOrSignUpRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username    string `json:"username"`
+	DisplayName string `json:"displayName"`
+	Password    string `json:"password"`
 }
 
 func main() {
 	app := gin.New()
-	MakeAuthHandler(app, MakeAuthRepository())
+	MakeAuthHandler(app, MakeAuthRepository(), MakeUserClient())
 	MakeGatewayHandler(app)
 
 	if err := app.Run(":8080"); err != nil {
 		panic(err)
 	}
+}
+
+func MakeUserClient() client.UserClient {
+	return client.NewUserClient(userServiceURL)
 }
 
 func MakeAuthRepository() *auth.Repository {
@@ -38,12 +51,12 @@ func MakeGatewayHandler(app *gin.Engine) {
 	group := app.Group("")
 	group.Use(internal.AuthMiddleware())
 
-	group.GET("/api/message/*path", ProxyTo("MESSAGE_SERVICE_URL"))
-	group.GET("/api/post/*path", ProxyTo("POST_SERVICE_URL"))
-	group.GET("/api/user/*path", ProxyTo("USER_SERVICE_URL"))
+	group.Any("/api/message/*path", ProxyTo(messageServiceURL))
+	group.Any("/api/post/*path", ProxyTo(postServiceURL))
+	group.Any("/api/user/*path", ProxyTo(userServiceURL))
 }
 
-func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository) {
+func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository, userClient client.UserClient) {
 	group := app.Group("/api/auth")
 	{
 		group.GET("/exists/:username", func(c *gin.Context) {
@@ -75,7 +88,12 @@ func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			c.JSON(http.StatusOK, gin.H{"token": token})
+			user, err := userClient.GetUser(body.Username)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"token": token, "user": user})
 		})
 
 		group.POST("/signup", func(c *gin.Context) {
@@ -84,16 +102,26 @@ func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			user, err := authRepo.GetUser(body.Username)
+			euser, err := authRepo.GetUser(body.Username)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			if user == nil {
+			if euser == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
 				return
 			}
-			c.Status(http.StatusCreated)
+			user, err := userClient.CreateUser(body.Username, body.DisplayName)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			err = authRepo.CreateUser(body.Username, body.Password)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusCreated, gin.H{"user": user})
 		})
 	}
 }
@@ -106,7 +134,6 @@ func ProxyTo(targetHost string) gin.HandlerFunc {
 			return
 		}
 		c.Request.URL.Host = tUrl.Host
-		c.Request.URL.Path = tUrl.Path
 		c.Request.Host = tUrl.Host
 		c.Request.Header.Set("Referer", "http://gateway")
 

@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import CreatePostInput from '../components/feed/CreatePostInput';
 import PostCard from '../components/feed/PostCard';
-import { posts } from '../data/mockData';
+import { Post } from '../types/post';
+import { postService } from '../services/postService';
+import { handleError } from '../utils/errors';
+import { authService } from '../services/authService';
+// import { posts } from '../data/mockData';
 
 const Feed: React.FC = () => {
-  // Filter only blog posts
-  const blogPosts = posts.filter(post => post.type === 'blog');
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    postService.getByUsers(authService.getCurrentUserFriends().map(f => f.username))
+      .then(setPosts)
+      .catch(error => handleError(error, 'Failed to fetch posts'));
+  }, []);
 
   return (
     <div>
@@ -19,7 +28,7 @@ const Feed: React.FC = () => {
         <CreatePostInput />
         
         <div className="space-y-4">
-          {blogPosts.map((post) => (
+          {posts.map((post) => (
             <motion.div
               key={post.id}
               initial={{ opacity: 0, y: 20 }}

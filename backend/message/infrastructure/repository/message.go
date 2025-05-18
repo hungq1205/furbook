@@ -64,3 +64,16 @@ func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pag
 
 	return messages, nil
 }
+
+func (r *MessageRepository) GetLastMessage(groupID int) (*entity.Message, error) {
+	var message entity.Message
+	err := r.db.
+		Where("group_id = ?", groupID).
+		// Order("created_at desc").
+		First(&message).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	return &message, nil
+}

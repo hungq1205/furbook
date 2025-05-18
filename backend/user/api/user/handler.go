@@ -12,20 +12,20 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 	userGroup := app.Group("/api/user")
 	{
 		// Public routes
-		userGroup.GET("/:userId", func(c *gin.Context) {
+		userGroup.GET("/:username", func(c *gin.Context) {
 			GetUser(c, userService, friendService)
 		})
 
-		userGroup.GET("", func(c *gin.Context) {
+		userGroup.POST("/list", func(c *gin.Context) {
 			GetUserList(c, userService, friendService)
+		})
+
+		userGroup.POST("", func(c *gin.Context) {
+			CreateUser(c, userService, friendService)
 		})
 
 		// Authenticated routes
 		authGroup := userGroup.Group("", middleware.MustAuthMiddleware())
-
-		authGroup.POST("", func(c *gin.Context) {
-			CreateUser(c, userService, friendService)
-		})
 
 		authGroup.PATCH("", func(c *gin.Context) {
 			UpdateUser(c, userService, friendService)

@@ -27,7 +27,7 @@ export interface Post {
   updatedAt: string;
   interactions: Interaction[];
   commentNum: number;
-  
+
   // Optional: Lost Found Post
   lostAt?: string;
   area?: Location;

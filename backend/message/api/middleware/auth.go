@@ -1,12 +1,13 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"message/util"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func MustAuthorizeMiddleware() gin.HandlerFunc {
+func MustAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetHeader("X-Username")
 		if username == "" {
@@ -18,7 +19,7 @@ func MustAuthorizeMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AuthorizeMiddleware() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		username := c.GetHeader("X-Username")
 		util.RegisterUsername(c, username)

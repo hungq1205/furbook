@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"post/api/presenter"
 	"post/entity"
 	"time"
 )
@@ -16,9 +15,9 @@ type CreateBlogPostPayload struct {
 }
 
 type CreateLostPetPostPayload struct {
-	Type    presenter.TextPostType `json:"type"`
-	Content string                 `json:"content"`
-	Medias  []entity.Media         `json:"medias"`
+	Type    entity.PostType `json:"type"`
+	Content string          `json:"content"`
+	Medias  []entity.Media  `json:"medias"`
 
 	ContactInfo string          `json:"contactInfo"`
 	LostAt      *time.Time      `json:"lostAt"`

@@ -1,13 +1,14 @@
 package message
 
 import (
-	"github.com/gin-gonic/gin"
 	payload "message/api/payload/message"
 	"message/usecase/group"
 	"message/usecase/message"
 	"message/util"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func checkMembership(ctx *gin.Context, groupID int, groupService group.UseCase) {
@@ -76,7 +77,7 @@ func createGroupMessage(ctx *gin.Context, messageService message.UseCase, groupS
 	ctx.JSON(http.StatusCreated, messageEntityToPresenter(msg))
 }
 
-func createDirectMessage(ctx *gin.Context, messageService message.UseCase, groupService group.UseCase) {
+func createDirectMessage(ctx *gin.Context, messageService message.UseCase) {
 	var body payload.CreateDirectMessagePayload
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -16,6 +16,7 @@ func messageEntityToPresenter(in *entity.Message) (out *presenter.Message) {
 }
 
 func messageListEntityToPresenter(in []*entity.Message) (out []*presenter.Message) {
+	out = make([]*presenter.Message, 0)
 	for _, msg := range in {
 		out = append(out, messageEntityToPresenter(msg))
 	}

@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LostPetCard from '../components/lost-pet/LostPetCard';
 import Button from '../components/common/Button';
-import { posts } from '../data/mockData';
+import { Post } from '../types/post';
+import { postService } from '../services/postService';
+import { handleError } from '../utils/errors';
+import { authService } from '../services/authService';
 
 const LostPets: React.FC = () => {
-  // Filter only lost and found pet posts
-  const lostPetPosts = posts.filter(post => post.type === 'lost' || post.type === 'found');
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    postService.getByUsers(authService.getCurrentUserFriends().map(f => f.username))
+      .then(posts => setPosts(posts.filter(post => post.type === 'lost' || post.type === 'found')))
+      .catch(error => handleError(error, 'Failed to fetch posts'));
+  }, []);
 
   return (
     <div>
@@ -27,7 +35,7 @@ const LostPets: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {lostPetPosts.map((post, index) => (
+          {posts.map((post, index) => (
             <motion.div
               key={post.id}
               initial={{ opacity: 0, y: 20 }}

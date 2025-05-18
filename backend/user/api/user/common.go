@@ -21,7 +21,8 @@ func UserEntityToPresenter(in *entity.User, friendSerivce friend.UseCase) (*pres
 	}, nil
 }
 
-func ListUserEntityToPresenter(in []*entity.User, friendSerivce friend.UseCase) (out []*presenter.User, err error) {
+func ListUserEntityToPresenter(in []*entity.User, friendSerivce friend.UseCase) ([]*presenter.User, error) {
+	out := make([]*presenter.User, 0)
 	for _, user := range in {
 		pUser, err := UserEntityToPresenter(user, friendSerivce)
 		if err != nil {

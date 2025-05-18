@@ -18,7 +18,7 @@ func ListPostEntityToPresenter(posts []*entity.Post, users map[string]*presenter
 func PostEntityToPresenter(post *entity.Post, user *presenter.User) *presenter.Post {
 	return &presenter.Post{
 		ID:          post.ID,
-		Type:        PostTypeToText(post.Type),
+		Type:        post.Type,
 		Username:    post.Username,
 		DisplayName: user.DisplayName,
 		UserAvatar:  user.Avatar,
@@ -106,30 +106,4 @@ func ListCommentEntityToPresenterWithClient(comments []entity.Comment, userClien
 		pComments[i] = CommentEntityToPresenter(c, userDict[c.Username])
 	}
 	return pComments, nil
-}
-
-func PostTypeToText(postType entity.PostType) presenter.TextPostType {
-	switch postType {
-	case entity.Blog:
-		return presenter.Blog
-	case entity.Lost:
-		return presenter.Lost
-	case entity.Found:
-		return presenter.Found
-	default:
-		return ""
-	}
-}
-
-func PostTypeToInt(postType presenter.TextPostType) entity.PostType {
-	switch postType {
-	case presenter.Blog:
-		return entity.Blog
-	case presenter.Lost:
-		return entity.Lost
-	case presenter.Found:
-		return entity.Found
-	default:
-		return -1
-	}
 }

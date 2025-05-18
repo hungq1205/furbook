@@ -11,7 +11,7 @@ import (
 )
 
 func GetUser(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase) {
-	usr, err := userService.GetUser(util.MustGetUsername(ctx))
+	usr, err := userService.GetUser(ctx.Param("username"))
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -23,7 +23,7 @@ func GetUser(ctx *gin.Context, userService user.UseCase, friendService friend.Us
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"user": userPresenter})
+	ctx.JSON(http.StatusOK, userPresenter)
 }
 
 func GetUserList(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase) {
@@ -35,17 +35,17 @@ func GetUserList(ctx *gin.Context, userService user.UseCase, friendService frien
 
 	users, err := userService.GetUsers(body.Usernames)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	userPresenter, err := ListUserEntityToPresenter(users, friendService)
+	usersPresenter, err := ListUserEntityToPresenter(users, friendService)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user data"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user data " + err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"users": userPresenter})
+	ctx.JSON(http.StatusOK, usersPresenter)
 }
 
 func CreateUser(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase) {
@@ -67,7 +67,7 @@ func CreateUser(ctx *gin.Context, userService user.UseCase, friendService friend
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"user": userPresenter})
+	ctx.JSON(http.StatusCreated, userPresenter)
 }
 
 func UpdateUser(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase) {
@@ -89,7 +89,7 @@ func UpdateUser(ctx *gin.Context, userService user.UseCase, friendService friend
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"user": userPresenter})
+	ctx.JSON(http.StatusCreated, userPresenter)
 }
 
 func DeleteUser(ctx *gin.Context, Service user.UseCase) {
@@ -106,7 +106,7 @@ func GetFriendList(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get friend list"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"friends": friendRequests})
+	ctx.JSON(http.StatusOK, friendRequests)
 }
 
 func GetFriendRequestList(ctx *gin.Context, Service friend.UseCase) {
@@ -115,7 +115,7 @@ func GetFriendRequestList(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get friend request list"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"friend_requests": friendRequests})
+	ctx.JSON(http.StatusOK, friendRequests)
 }
 
 func CheckFriendRequest(ctx *gin.Context, Service friend.UseCase) {
@@ -129,7 +129,7 @@ func CheckFriendRequest(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friend request"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"exists": exists})
+	ctx.JSON(http.StatusOK, exists)
 }
 
 func CheckFriendship(ctx *gin.Context, Service friend.UseCase) {
@@ -143,7 +143,7 @@ func CheckFriendship(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friendship"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"exists": exists})
+	ctx.JSON(http.StatusOK, exists)
 }
 
 func SendFriendRequest(ctx *gin.Context, Service friend.UseCase) {

@@ -1,10 +1,10 @@
 package entity
 
-type InteractionType int
+type InteractionType string
 
 const (
-	Like InteractionType = iota
-	Heart
+	Like  InteractionType = "like"
+	Heart                 = "heart"
 )
 
 type Interaction struct {

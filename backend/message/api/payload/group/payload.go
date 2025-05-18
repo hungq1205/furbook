@@ -1,8 +1,8 @@
 package payload
 
 type CreateGroupPayload struct {
-	GroupName string `json:"group_name"`
-	Username  string `json:"username"`
+	GroupName string   `json:"group_name"`
+	Members   []string `json:"members"`
 }
 
 type UpdateGroupPayload struct {

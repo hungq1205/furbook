@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';

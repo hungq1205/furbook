@@ -9,7 +9,7 @@ import MediaGallery from './MediaGallery';
 import EditPostModal from '../post/EditPostModal';
 import { formatDistanceToNow } from '../../utils/dateUtils';
 import { currentUser } from '../../data/mockData';
-import { postApi } from '../../services/api';
+import { postService } from '../../services/postService';
 
 interface PostCardProps {
   post: Post;
@@ -41,7 +41,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
-        await postApi.delete(post.id);
+        await postService.delete(post.id);
         onPostDeleted?.(post.id);
       } catch (error) {
         console.error('Failed to delete post:', error);

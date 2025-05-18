@@ -1,17 +1,44 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Send } from 'lucide-react';
 import Avatar from '../components/common/Avatar';
 import Card from '../components/common/Card';
-import { friends, messages, groupChats } from '../data/mockData';
+// import { friends, messages, groupChats } from '../data/mockData';
 import { formatDistanceToNow } from '../utils/dateUtils';
+import { groupChatService } from '../services/groupChatService';
+import { GroupChat, Message } from '../types/message';
+import { handleError } from '../utils/errors';
+import { messageService } from '../services/messageService';
+import { authService } from '../services/authService';
+
+const selectGroupChat = async (
+  selectedGroupId: number, 
+  setSelectedGroup: (group: GroupChat | null) => void,
+  setMessages: (messages: Message[]) => void,
+) => {
+  try {
+    const group = await groupChatService.getGroupDetails(selectedGroupId)
+    const messages = await messageService.getGroupMessages(selectedGroupId);
+    setSelectedGroup(group);
+    setMessages(messages);
+  } catch (error) {
+    handleError(error, 'Failed to fetch group chat details');
+  }
+}
 
 const Messages: React.FC = () => {
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [groupChats, setGroupChats] = useState<GroupChat[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<GroupChat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
 
-  const selectedChatData = groupChats.find(chat => chat.id === selectedChat);
-  const chatMessages = messages.filter(msg => msg.groupId === selectedChat);
+  const friends = authService.getCurrentUserFriends();
+
+  useEffect(() => {
+    groupChatService.getGroups()
+      .then(setGroupChats)
+      .catch(error => handleError(error, 'Failed to fetch group chats'));
+  }, [])
 
   return (
     <motion.div
@@ -22,7 +49,7 @@ const Messages: React.FC = () => {
     >
       <Card className="flex-1 overflow-hidden">
         <div className="h-full flex">
-          <div className={`${selectedChat ? 'hidden md:block' : 'w-full'} md:w-80 border-r border-gray-200`}>
+          <div className={`${selectedGroup ? 'hidden md:block' : 'w-full'} md:w-80 border-r border-gray-200`}>
             <div className="h-full flex flex-col">
               <div className="overflow-y-auto flex-1">
                 <div className="relative m-4">
@@ -33,21 +60,17 @@ const Messages: React.FC = () => {
                   />
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 </div>
-                {groupChats.map((chat) => {
-                  const lastMessage = messages
-                    .filter(m => m.groupId === chat.id)
-                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-                  
-                  const chatFriend = chat.isDirect 
-                    ? friends.find(f => chat.members.includes(f.username))
+                {groupChats.map(group  => {
+                  const chatFriend = group.isDirect 
+                    ? friends.find(f => group.members.includes(f.username))
                     : null;
 
                   return (
                     <button
-                      key={chat.id}
-                      onClick={() => setSelectedChat(chat.id)}
+                      key={group.id}
+                      onClick={() => selectGroupChat(group.id, setSelectedGroup, setMessages)}
                       className={`w-full flex items-center p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 ${
-                        selectedChat === chat.id ? 'bg-primary-50' : ''
+                        selectedGroup?.id === group.id ? 'bg-primary-50' : ''
                       }`}
                     >
                       {chatFriend && (
@@ -60,17 +83,19 @@ const Messages: React.FC = () => {
                       <div className="ml-3 flex-1 text-left">
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-gray-900">
-                            {chat.isDirect ? chatFriend?.displayName : chat.name}
+                            {group.isDirect ? chatFriend?.displayName : group.name}
                           </p>
-                          {lastMessage && (
+                          {group.lastMessage && (
                             <span className="text-xs text-gray-500">
-                              {formatDistanceToNow(new Date(lastMessage.createdAt))}
+                              {formatDistanceToNow(new Date(group.lastMessage.createdAt))}
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500 truncate">
-                          {lastMessage?.content || 'No messages yet'}
-                        </p>
+                        {group.lastMessage && (
+                          <p className="text-sm text-gray-500 truncate">
+                            {group.lastMessage.content}
+                          </p>
+                        )}
                       </div>
                     </button>
                   );
@@ -80,28 +105,31 @@ const Messages: React.FC = () => {
           </div>
 
           {/* Chat area */}
-          <div className={`${selectedChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col h-full bg-gray-50`}>
-            {selectedChatData ? (
+          <div className={`${selectedGroup ? 'flex' : 'hidden md:flex'} flex-1 flex-col h-full bg-gray-50`}>
+            {selectedGroup ? (
               <>
                 <div className="p-4 bg-white border-b border-gray-200 flex items-center justify-between">
                   <div className="flex items-center">
                     <button 
                       className="md:hidden mr-2 text-gray-600"
-                      onClick={() => setSelectedChat(null)}
+                      onClick={() => {
+                        setSelectedGroup(null);
+                        setMessages([]);
+                      }}
                     >
                       Back
                     </button>
                     <span className="font-medium">
-                      {selectedChatData.isDirect 
-                        ? friends.find(f => selectedChatData.members.includes(f.username))?.displayName
-                        : selectedChatData.name}
+                      {selectedGroup.isDirect 
+                        ? friends.find(f => selectedGroup.members.includes(f.username))?.displayName
+                        : selectedGroup.name}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4">
-                  {chatMessages.length > 0 ? (
-                    chatMessages.map((msg) => {
+                  {messages.length > 0 ? (
+                    messages.map((msg) => {
                       const sender = friends.find(f => f.username === msg.username);
                       return (
                         <div key={msg.id} className="mb-4">

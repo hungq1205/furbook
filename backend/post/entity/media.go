@@ -1,10 +1,10 @@
 package entity
 
-type MediaType int
+type MediaType string
 
 const (
-	Image MediaType = iota
-	Video
+	Image MediaType = "image"
+	Video           = "video"
 )
 
 type Media struct {

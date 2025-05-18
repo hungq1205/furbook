@@ -7,17 +7,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type TextPostType string
-
-const (
-	Blog  TextPostType = "blog"
-	Lost  TextPostType = "lost"
-	Found TextPostType = "found"
-)
-
 type Post struct {
 	ID          primitive.ObjectID `json:"id"`
-	Type        TextPostType       `json:"type"`
+	Type        entity.PostType    `json:"type"`
 	Username    string             `json:"username"`
 	DisplayName string             `json:"displayName"`
 	UserAvatar  string             `json:"userAvatar"`

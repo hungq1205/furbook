@@ -13,14 +13,28 @@ import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
+import { authService } from './services/authService';
+
+// ProtectedRoute component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  return authService.isAuthenticated() ? children : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
     <Router>
       <AnimatePresence mode="wait">
         <Routes>
-          {/* Main layout routes */}
-          <Route path="/" element={<MainLayout />}>
+          <Route path="/login" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Feed />} />
             <Route path="lost-pets" element={<LostPets />} />
             <Route path="messages" element={<Messages />} />
@@ -29,13 +43,18 @@ function App() {
             <Route path="post/:id" element={<PostDetail />} />
             <Route path="lost-pets/:id" element={<PostDetail />} />
           </Route>
-          
-          {/* Simple layout routes */}
-          <Route path="/" element={<SimpleLayout />}>
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <SimpleLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="create-lost-pet" element={<CreateLostPet />} />
           </Route>
-          
-          {/* Redirect any other route to home */}
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>

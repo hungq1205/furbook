@@ -41,7 +41,7 @@ func makeHandler() *gin.Engine {
 	userClient := client.NewUserClient("http://user:8080")
 
 	message.MakeHandler(app, messageService, groupService)
-	group.MakeHandler(app, groupService, userClient)
+	group.MakeHandler(app, groupService, messageService, userClient)
 
 	return app
 }

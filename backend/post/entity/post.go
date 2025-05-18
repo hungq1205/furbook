@@ -6,12 +6,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PostType int
+type PostType string
 
 const (
-	Blog PostType = iota
-	Lost
-	Found
+	Blog  PostType = "blog"
+	Lost           = "lost"
+	Found          = "found"
 )
 
 type Post struct {

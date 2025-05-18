@@ -1,16 +1,17 @@
 package message
 
 import (
-	"github.com/gin-gonic/gin"
 	"message/api/middleware"
 	"message/usecase/group"
 	"message/usecase/message"
+
+	"github.com/gin-gonic/gin"
 )
 
 func MakeHandler(app *gin.Engine, messageService message.UseCase, groupService group.UseCase) {
 	messageGroup := app.Group("/api/message")
 	{
-		messageGroup.Use(middleware.AuthorizeMiddleware())
+		messageGroup.Use(middleware.MustAuthMiddleware())
 
 		messageGroup.GET("/group/:groupID", func(ctx *gin.Context) {
 			getGroupMessageList(ctx, messageService, groupService)
@@ -25,7 +26,7 @@ func MakeHandler(app *gin.Engine, messageService message.UseCase, groupService g
 		})
 
 		messageGroup.POST("/direct", func(ctx *gin.Context) {
-			createDirectMessage(ctx, messageService, groupService)
+			createDirectMessage(ctx, messageService)
 		})
 	}
 }

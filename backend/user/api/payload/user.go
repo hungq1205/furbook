@@ -18,7 +18,7 @@ type UserListRequest struct {
 
 type CheckFriendRequest struct {
 	User   string `json:"username"`
-	Friend string `json:"friend_name"`
+	Friend string `json:"friend"`
 }
 
 type ReceiverWrapper struct {

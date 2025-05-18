@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageCircle, Share2, Users, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -6,12 +6,21 @@ import Button from '../components/common/Button';
 import Avatar from '../components/common/Avatar';
 import Card from '../components/common/Card';
 import MediaGallery from '../components/feed/MediaGallery';
-import { posts } from '../data/mockData';
+// import { posts } from '../data/mockData';
 import { formatDistanceToNow } from '../utils/dateUtils';
+import { handleError } from '../utils/errors';
+import { postService } from '../services/postService';
+import { Post } from '../types/post';
 
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const post = posts.find(p => p.id === id);
+  const [post, setPost] = React.useState<Post | null>(null);
+
+  useEffect(() => {
+    postService.getById(id!)
+      .then(setPost)
+      .catch(error => handleError(error, 'Failed to fetch post'));
+  }, [id]);
 
   if (!post) {
     return (
@@ -151,17 +160,17 @@ const PostDetail: React.FC = () => {
             {post.commentNum > 0 ? (
               <div className="space-y-4">
                 <div className="flex space-x-3">
-                  <Link to={`/profile/${posts[1].username}`}>
+                  <Link to={`/profile/${post.username}`}>
                     <Avatar 
-                      src={posts[1].userAvatar} 
-                      alt={posts[1].displayName} 
+                      src={post.userAvatar} 
+                      alt={post.displayName} 
                       size="md" 
                     />
                   </Link>
                   <div>
                     <div className="bg-gray-100 p-3 rounded-lg justify-items-start">
-                      <Link to={`/profile/${posts[1].username}`} className="mb-1 hover:underline">
-                        <div className="font-medium text-gray-900">{posts[1].displayName}</div>
+                      <Link to={`/profile/${post.username}`} className="mb-1 hover:underline">
+                        <div className="font-medium text-gray-900">{post.displayName}</div>
                       </Link>
                       <p className="text-gray-800">
                         {post.type === 'lost' || post.type === 'found'
