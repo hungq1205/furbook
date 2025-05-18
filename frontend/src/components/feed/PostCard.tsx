@@ -8,8 +8,9 @@ import IconButton from '../common/IconButton';
 import MediaGallery from './MediaGallery';
 import EditPostModal from '../post/EditPostModal';
 import { formatDistanceToNow } from '../../utils/dateUtils';
-import { currentUser } from '../../data/mockData';
+// import { currentUser } from '../../data/mockData';
 import { postService } from '../../services/postService';
+import { authService } from '../../services/authService';
 
 interface PostCardProps {
   post: Post;
@@ -21,7 +22,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
   const navigate = useNavigate();
   const [showOptions, setShowOptions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const isOwnPost = post.username === currentUser.username;
+  const isOwnPost = post.username === authService.getCurrentUser().username;
 
   const handleContentClick = () => {
     navigate(`/post/${post.id}`);

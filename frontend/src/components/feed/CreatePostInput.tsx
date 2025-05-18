@@ -3,8 +3,9 @@ import { Image, Video, Send } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import Button from '../common/Button';
 import Card from '../common/Card';
-import { currentUser } from '../../data/mockData';
+// import { currentUser } from '../../data/mockData';
 import { motion } from 'framer-motion';
+import { authService } from '../../services/authService';
 
 const CreatePostInput: React.FC = () => {
   const [content, setContent] = useState('');
@@ -29,7 +30,7 @@ const CreatePostInput: React.FC = () => {
   return (
     <Card className="mb-6 p-4 bg-white">
       <div className="flex items-start space-x-3">
-        <Avatar src={currentUser.avatar} alt={currentUser.name} size="md" />
+        <Avatar src={authService.getCurrentUser().avatar} alt={authService.getCurrentUser().displayName} size="md" />
         
         <div className="flex-1">
           <div 

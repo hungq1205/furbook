@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Minus, Maximize2 } from 'lucide-react';
 import Avatar from '../common/Avatar';
-import { friends } from '../../data/mockData';
-import { formatDistanceToNow } from '../../utils/dateUtils';
+// import { friends } from '../../data/mockData';
+import { authService } from '../../services/authService';
 
 interface ChatTabProps {
   username: string;
@@ -111,7 +111,7 @@ const FriendsSidebar: React.FC = () => {
       
       <div className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-2">
-          {friends.map(friend => (
+          {authService.getCurrentUserFriends().map(friend => (
             <li key={friend.username}>
               <button
                 onClick={() => toggleChat(friend.username)}
@@ -134,7 +134,7 @@ const FriendsSidebar: React.FC = () => {
       <div className="fixed bottom-0 right-4 flex justify-end space-x-2 z-50">
         <AnimatePresence>
           {openChats.map(username => {
-            const friend = friends.find(f => f.username === username);
+            const friend = authService.getCurrentUserFriends().find(f => f.username === username);
             if (!friend) return null;
             
             return (
