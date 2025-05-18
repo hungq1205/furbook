@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { X, Upload, Trash2 } from 'lucide-react';
 import { Post, Media } from '../../types/post';
 import Button from '../common/Button';
-import { postApi } from '../../services/api';
 
 interface EditPostModalProps {
   post: Post;
@@ -61,19 +60,19 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose, onSave }) 
       );
 
       // Update the post with new content and media
-      const updatedPost = await postApi.update(post.id, {
-        content,
-        medias: [
-          ...post.medias,
-          ...mediaUrls.map(url => ({
-            id: Math.random().toString(),
-            type: url.includes('.mp4') ? 'video' : 'image',
-            url
-          }))
-        ]
-      });
+      // const updatedPost = await postApi.update(post.id, {
+      //   content,
+      //   medias: [
+      //     ...post.medias,
+      //     ...mediaUrls.map(url => ({
+      //       id: Math.random().toString(),
+      //       type: url.includes('.mp4') ? 'video' : 'image',
+      //       url
+      //     }))
+      //   ]
+      // });
 
-      onSave(updatedPost);
+      // onSave(updatedPost);
       onClose();
     } catch (error) {
       console.error('Failed to update post:', error);

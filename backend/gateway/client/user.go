@@ -35,7 +35,7 @@ func NewUserClient(userUrl string) UserClient {
 }
 
 func (c *UserClientImpl) GetUser(username string) (*User, error) {
-	resp, err := http.Get(c.userUrl + "/api/users/" + username)
+	resp, err := http.Get(c.userUrl + "/api/user/" + username)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (c *UserClientImpl) CreateUser(username string, displayName string) (*User,
 		return nil, err
 	}
 
-	resp, err := http.Post(c.userUrl+"/api/users", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(c.userUrl+"/api/user", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}

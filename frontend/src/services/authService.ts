@@ -4,8 +4,14 @@ import { BASE_URL, defaultHeaders, HttpError } from './util';
 
 const AUTH_URL = `${BASE_URL}/auth`;
 
-interface AuthRequest {
+interface LoginPayload {
   username: string;
+  password: string;
+}
+
+interface SignupPayload {
+  username: string;
+  displayName: string;
   password: string;
 }
 
@@ -26,7 +32,7 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async signup(data: AuthRequest): Promise<void> {
+  async signup(data: SignupPayload): Promise<void> {
     const response = await fetch(`${AUTH_URL}/signup`, {
       method: 'POST',
       headers: defaultHeaders,
@@ -35,7 +41,7 @@ class AuthService {
     if (!response.ok) throw new HttpError(response.status, await response.json());
   }
 
-  async login(data: AuthRequest): Promise<User> {
+  async login(data: LoginPayload): Promise<User> {
     const response = await fetch(`${AUTH_URL}/login`, {
       method: 'POST',
       headers: defaultHeaders,
@@ -44,10 +50,10 @@ class AuthService {
     if (!response.ok) throw new HttpError(response.status, await response.json());
 
     const { token, user } = await response.json() as { token: string; user: User };
-    const friends = await userService.getFriends();
-
     this.setToken(token);
     this.currentUser = user;
+
+    const friends = await userService.getFriends();
     this.currentUserFriends = friends;
     return user;
   }
@@ -77,6 +83,7 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
+    console.log('isAuthenticated', this.token);
     return !!this.token;
   }
 

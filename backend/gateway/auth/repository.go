@@ -27,18 +27,17 @@ func NewAuthRepository(dsn string) (*Repository, error) {
 		db: db,
 	}, nil
 }
-
 func (r *Repository) Authenticate(username, password string) (bool, error) {
-	hashedPassword := internal.Hash(password)
-	var user User
-	err := r.db.First(&User{}).Where("hashed_password = ?", hashedPassword).Find(&user).Error
+	var passwordHashed string
+	err := r.db.Model(&User{}).Where("username = ?", username).Pluck("password_hashed", &passwordHashed).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
 	if err != nil {
 		return false, err
 	}
-	return true, nil
+
+	return internal.CompareHashAndPassword(passwordHashed, password), nil
 }
 
 func (r *Repository) GetUser(username string) (*User, error) {

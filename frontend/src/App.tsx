@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
 import { authService } from './services/authService';
+import Auth from './pages/Auth';
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -25,7 +26,7 @@ function App() {
     <Router>
       <AnimatePresence mode="wait">
         <Routes>
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/login" element={<Auth />} />
 
           <Route
             path="/"
