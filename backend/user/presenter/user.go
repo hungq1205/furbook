@@ -5,7 +5,7 @@ type User struct {
 	DisplayName string `json:"displayName"`
 	Avatar      string `json:"avatar"`
 	Bio         string `json:"bio"`
-	FriendNum   int    `json:"friend_num"`
+	FriendNum   int    `json:"friendNum"`
 }
 
 type FriendList struct {
