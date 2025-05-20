@@ -19,7 +19,7 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 			GetPostsOfUser(c, postService, userClient)
 		})
 
-		postGroup.GET("/ofUsers", func(c *gin.Context) {
+		postGroup.POST("/ofUsers", func(c *gin.Context) {
 			GetPostsOfUsers(c, postService, userClient)
 		})
 

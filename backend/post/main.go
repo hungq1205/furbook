@@ -22,6 +22,7 @@ func main() {
 
 func makeHandler() *gin.Engine {
 	app := gin.New()
+	app.Use(gin.Logger())
 
 	mongoClient, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://admin:admin123@postdb:27017"))
 	if err != nil {

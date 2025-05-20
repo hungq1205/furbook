@@ -19,10 +19,6 @@ type GetUserListRequest struct {
 	Usernames []string `json:"usernames"`
 }
 
-type GetUserListResponse struct {
-	Users []*presenter.User `json:"users"`
-}
-
 func NewUserClient(userUrl string) UserClient {
 	return &UserClientImpl{
 		userUrl: userUrl,
@@ -35,16 +31,16 @@ func (c *UserClientImpl) FindUsers(usernames []string) ([]*presenter.User, error
 		return nil, err
 	}
 
-	resp, err := http.Post(c.userUrl+"/api/users/list", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(c.userUrl+"/api/user/list", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	var respBody GetUserListResponse
-	if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+	var users []*presenter.User
+	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
 		return nil, err
 	}
 
-	return respBody.Users, nil
+	return users, nil
 }

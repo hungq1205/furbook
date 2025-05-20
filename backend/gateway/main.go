@@ -61,6 +61,7 @@ func MakeGatewayHandler(app *gin.Engine) {
 	group.Use(internal.AuthMiddleware())
 
 	group.Any("/api/message/*path", ProxyTo(messageServiceURL))
+	group.Any("/api/group/*path", ProxyTo(messageServiceURL))
 	group.Any("/api/post/*path", ProxyTo(postServiceURL))
 	group.Any("/api/user/*path", ProxyTo(userServiceURL))
 }

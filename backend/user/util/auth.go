@@ -14,7 +14,7 @@ func MustGetUsername(ctx *gin.Context) string {
 }
 
 func RegisterAuthorizedUser(ctx *gin.Context) (bool, error) {
-	username := ctx.Request.Header.Get("X-USERNAME")
+	username := ctx.GetHeader("X-Username")
 	ctx.Set("username", username)
-	return username == "", nil
+	return username != "", nil
 }
