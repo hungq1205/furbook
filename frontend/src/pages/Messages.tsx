@@ -18,7 +18,7 @@ const selectGroupChat = async (
 ) => {
   try {
     const group = await groupChatService.getGroupDetails(selectedGroupId)
-    const messages = await messageService.getGroupMessages(selectedGroupId);
+    const messages = await messageService.getGroupMessages(selectedGroupId, 1, 10);
     setSelectedGroup(group);
     setMessages(messages);
   } catch (error) {
@@ -61,10 +61,6 @@ const Messages: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 </div>
                 {groupChats.map(group  => {
-                  const chatFriend = group.isDirect 
-                    ? friends.find(f => group.members.includes(f.username))
-                    : null;
-
                   return (
                     <button
                       key={group.id}
@@ -73,27 +69,27 @@ const Messages: React.FC = () => {
                         selectedGroup?.id === group.id ? 'bg-primary-50' : ''
                       }`}
                     >
-                      {chatFriend && (
+                      {group.is_direct && (
                         <Avatar
-                          src={chatFriend.avatar}
-                          alt={chatFriend.displayName}
+                          src={group.avatar ?? ''}
+                          alt={group.name}
                           size="md"
                         />
                       )}
                       <div className="ml-3 flex-1 text-left">
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-gray-900">
-                            {group.isDirect ? chatFriend?.displayName : group.name}
+                            {group.name}
                           </p>
-                          {group.lastMessage && (
+                          {group.last_message && (
                             <span className="text-xs text-gray-500">
-                              {formatDistanceToNow(new Date(group.lastMessage.createdAt))}
+                              {formatDistanceToNow(new Date(group.last_message.created_at))}
                             </span>
                           )}
                         </div>
-                        {group.lastMessage && (
+                        {group.last_message && (
                           <p className="text-sm text-gray-500 truncate">
-                            {group.lastMessage.content}
+                            {group.last_message.content}
                           </p>
                         )}
                       </div>
@@ -120,9 +116,7 @@ const Messages: React.FC = () => {
                       Back
                     </button>
                     <span className="font-medium">
-                      {selectedGroup.isDirect 
-                        ? friends.find(f => selectedGroup.members.includes(f.username))?.displayName
-                        : selectedGroup.name}
+                      {selectedGroup.name}
                     </span>
                   </div>
                 </div>
@@ -130,7 +124,7 @@ const Messages: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-4">
                   {messages.length > 0 ? (
                     messages.map((msg) => {
-                      const sender = friends.find(f => f.username === msg.username);
+                      const sender = msg.username == authService.getCurrentUser().username ? authService.getCurrentUser() : friends.find(f => f.username === msg.username);
                       return (
                         <div key={msg.id} className="mb-4">
                           <div className="flex items-start">
@@ -143,7 +137,7 @@ const Messages: React.FC = () => {
                               <div className="flex items-center">
                                 <span className="font-medium text-sm">{sender?.displayName}</span>
                                 <span className="text-xs text-gray-500 ml-2">
-                                  {formatDistanceToNow(new Date(msg.createdAt))}
+                                  {formatDistanceToNow(new Date(msg.created_at))}
                                 </span>
                               </div>
                               <p className="text-gray-800 mt-1">{msg.content}</p>

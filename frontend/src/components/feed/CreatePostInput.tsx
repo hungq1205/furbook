@@ -6,10 +6,13 @@ import Card from '../common/Card';
 // import { currentUser } from '../../data/mockData';
 import { motion } from 'framer-motion';
 import { authService } from '../../services/authService';
+import { Media, postService, BlogPostPayload } from '../../services/postService';
+import { fileService } from '../../services/fileService';
 
 const CreatePostInput: React.FC = () => {
   const [content, setContent] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [uploadMedias, setUploadMedias]  = useState<File[]>([]);
 
   const handleFocus = () => {
     setExpanded(true);
@@ -20,12 +23,41 @@ const CreatePostInput: React.FC = () => {
     setExpanded(false);
   };
 
-  const handleSubmit = () => {
-    // In a real app, we would submit the post to an API
-    console.log('Posting:', content);
+  const handleSubmit = async () => {
+    const medias: Media[] = await Promise.all(
+      uploadMedias.map(async (file) => ({
+        type: file.type.startsWith('image/') ? 'image' : 'video',
+        url: await fileService.upload(file),
+      } as Media))
+    );
+    postService.createBlogPost({ content, medias } as BlogPostPayload);
+
     setContent('');
+    setUploadMedias([]);
     setExpanded(false);
   };
+
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      file && setUploadMedias((prev) => [...prev, file]);
+    };
+    input.click();
+  }
+
+  const handleVideoUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      file && setUploadMedias((prev) => [...prev, file]);
+    };
+    input.click();
+  }
 
   return (
     <Card className="mb-6 p-4 bg-white">
@@ -53,15 +85,22 @@ const CreatePostInput: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="flex space-x-2">
-                  <button className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm">
+                  <button 
+                    className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm"
+                    onClick={handleImageUpload}
+                  >
                     <Image size={18} className="mr-1" />
                     <span>Photo</span>
                   </button>
-                  <button className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm">
+                  <button 
+                    className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm"
+                    onClick={handleVideoUpload}
+                  >
                     <Video size={18} className="mr-1" />
                     <span>Video</span>
                   </button>
                 </div>
+                <FileUploadPreview files={uploadMedias} setFiles={setUploadMedias} />
               </motion.div>
             )}
           </div>
@@ -92,5 +131,27 @@ const CreatePostInput: React.FC = () => {
     </Card>
   );
 };
+
+function FileUploadPreview({ files, setFiles }: { files: File[]; setFiles: (files: File[]) => void }) {
+  return (
+  <div className="flex flex-wrap gap-2">
+    {files.map((media, index) => (
+      <div key={index} className="relative w-20 h-20">
+        <img
+          src={URL.createObjectURL(media)}
+          alt={`Uploaded media ${index + 1}`}
+          className="w-full h-full object-cover rounded-lg"
+        />
+        <button
+          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs flex items-center justify-center w-5 h-5"
+          onClick={() => setFiles(files.filter((_, i) => i !== index)) }
+        >
+          ✕
+        </button>
+      </div>
+    ))}
+  </div>
+  );
+} 
 
 export default CreatePostInput;

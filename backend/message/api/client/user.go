@@ -31,7 +31,7 @@ func (c *UserClientImpl) FindUsers(usernames []string) ([]*presenter.User, error
 		return nil, err
 	}
 
-	resp, err := http.Post(c.userUrl+"/api/user", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(c.userUrl+"/api/user/list", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}

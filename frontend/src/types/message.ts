@@ -1,10 +1,10 @@
 export interface GroupChat {
   id: number;
   name: string;
-  isDirect: boolean;
-  ownerName: string;
+  is_direct: boolean;
+  owner_name: string;
   members: string[];
-  lastMessage: Message | null;
+  last_message: Message | null;
 
   avatar?: string;
 }
@@ -12,7 +12,7 @@ export interface GroupChat {
 export interface Message {
   id: number;
   username: string;
-  groupId: number;
+  group_id: number;
   content: string;
-  createdAt: string;
+  created_at: string;
 }

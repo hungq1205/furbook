@@ -16,10 +16,6 @@ const Feed: React.FC = () => {
       .then(posts => setPosts(posts))
       .catch(error => handleError(error, 'Failed to fetch posts'));
   }, []);
-
-  useEffect(() => {
-    console.log('Posts:', posts);
-  }, [posts]);
   
   return (
     <div>

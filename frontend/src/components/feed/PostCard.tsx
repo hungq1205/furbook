@@ -106,8 +106,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
             )}
           </div>
           
-          <div onClick={handleContentClick} className="cursor-pointer">
-            <p className="text-gray-800 mb-3">{post.content}</p>
+          <div className="cursor-pointer">
+            <p onClick={handleContentClick} className="text-gray-800 mb-3">{post.content}</p>
             
             {post.medias?.length > 0 && (
               <MediaGallery media={post.medias} className="mb-3" />

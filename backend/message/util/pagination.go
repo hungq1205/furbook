@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Pagination struct {
@@ -20,7 +21,7 @@ func NewPagination(page, size int) Pagination {
 func ExtractPagination(ctx *gin.Context) Pagination {
 	sizeQuery := ctx.Query("size")
 	size, err := strconv.Atoi(sizeQuery)
-	if err != nil || size < 0 {
+	if err != nil || size <= 0 {
 		size = 10
 	}
 

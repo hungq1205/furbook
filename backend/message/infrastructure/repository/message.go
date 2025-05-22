@@ -46,7 +46,7 @@ func (r *MessageRepository) GetGroupMessageList(groupID int, pagination util.Pag
 		return nil, err
 	}
 
-	return nil, nil
+	return messages, nil
 }
 
 func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pagination util.Pagination) ([]*entity.Message, error) {
@@ -74,7 +74,7 @@ func (r *MessageRepository) GetLastMessage(groupID int) (*entity.Message, error)
 		Model(&entity.Message{}).
 		Where("group_id = ?", groupID).
 		// Order("created_at desc").
-		First(&message).
+		Last(&message).
 		Error
 	if err != nil {
 		return nil, err
