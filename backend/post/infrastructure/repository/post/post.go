@@ -18,10 +18,8 @@ type Repository struct {
 }
 
 func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{postCollection: db.Collection("posts")}
+	return &Repository{postCollection: db.Collection("post")}
 }
-
-// Post
 
 func (p *Repository) GetPost(ctx context.Context, id string) (*entity.Post, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
@@ -59,8 +57,8 @@ func (p *Repository) GetPostsOfUser(ctx context.Context, username string, pagina
 func (p *Repository) GetPostsOfUsers(ctx context.Context, usernames []string, pagination util.Pagination) ([]*entity.Post, error) {
 	var posts []*entity.Post
 
-	sortOpts := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
-	cursor, err := p.postCollection.Find(ctx, bson.M{"username": bson.M{"$in": usernames}}, sortOpts)
+	opts := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
+	cursor, err := p.postCollection.Find(ctx, bson.M{"username": bson.M{"$in": usernames}}, opts)
 	if err != nil {
 		return nil, err
 	}

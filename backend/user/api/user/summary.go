@@ -106,7 +106,12 @@ func GetFriendList(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get friend list"})
 		return
 	}
-	ctx.JSON(http.StatusOK, friendRequests)
+	friendPresenters, err := ListUserEntityToPresenter(friendRequests, Service)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse friend list"})
+		return
+	}
+	ctx.JSON(http.StatusOK, friendPresenters)
 }
 
 func GetFriendRequestList(ctx *gin.Context, Service friend.UseCase) {
@@ -115,7 +120,12 @@ func GetFriendRequestList(ctx *gin.Context, Service friend.UseCase) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get friend request list"})
 		return
 	}
-	ctx.JSON(http.StatusOK, friendRequests)
+	friendPresenters, err := ListUserEntityToPresenter(friendRequests, Service)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse friend list"})
+		return
+	}
+	ctx.JSON(http.StatusOK, friendPresenters)
 }
 
 func CheckFriendRequest(ctx *gin.Context, Service friend.UseCase) {

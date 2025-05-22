@@ -28,7 +28,7 @@ func makeHandler() *gin.Engine {
 	if err != nil {
 		panic(err)
 	}
-	mongoDB := mongoClient.Database("auth")
+	mongoDB := mongoClient.Database("test")
 
 	postRepo := postRepo.NewRepository(mongoDB)
 	postService := postService.NewService(postRepo)

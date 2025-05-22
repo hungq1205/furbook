@@ -15,7 +15,7 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 			GetPost(c, postService, userClient)
 		})
 
-		postGroup.GET("/ofuser/:username", func(c *gin.Context) {
+		postGroup.GET("/ofUser/:username", func(c *gin.Context) {
 			GetPostsOfUser(c, postService, userClient)
 		})
 

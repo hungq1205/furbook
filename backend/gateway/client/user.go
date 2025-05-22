@@ -12,7 +12,7 @@ type User struct {
 	DisplayName string `json:"displayName"`
 	Avatar      string `json:"avatar"`
 	Bio         string `json:"bio"`
-	FriendNum   int    `json:friendNum`
+	FriendNum   int    `json:"friendNum"`
 }
 
 type UserCreateRequest struct {

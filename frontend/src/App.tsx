@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
@@ -15,9 +14,18 @@ import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
 import { authService } from './services/authService';
 import Auth from './pages/Auth';
+import { useEffect } from 'react';
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  useEffect(() => {
+    authService.check().catch((error) => {
+      console.error('Error checking authentication:', error);
+      authService.logout();
+      window.location.href = '/login';
+    });
+  }, [authService.getToken()]);
+  
   return authService.isAuthenticated() ? children : <Navigate to="/login" replace />;
 };
 

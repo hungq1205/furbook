@@ -13,10 +13,14 @@ const Feed: React.FC = () => {
 
   useEffect(() => {
     postService.getByUsers(authService.getCurrentUserFriends().map(f => f.username))
-      .then(setPosts)
+      .then(posts => setPosts(posts))
       .catch(error => handleError(error, 'Failed to fetch posts'));
   }, []);
 
+  useEffect(() => {
+    console.log('Posts:', posts);
+  }, [posts]);
+  
   return (
     <div>
       <motion.div
@@ -29,14 +33,11 @@ const Feed: React.FC = () => {
         
         <div className="space-y-4">
           {posts.map((post) => (
-            <motion.div
+            <div
               key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
             >
               <PostCard post={post} />
-            </motion.div>
+            </div>
           ))}
         </div>
       </motion.div>

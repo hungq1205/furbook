@@ -2,7 +2,7 @@ import { User } from '../types/user';
 import { GroupChat } from '../types/message';
 import { BASE_URL, defaultAuthHeaders, HttpError } from './util';
 
-const GROUP_CHAT_URL = `${BASE_URL}/group-chat`;
+const GROUP_CHAT_URL = `${BASE_URL}/group`;
 
 export const groupChatService = {
   async getGroups(): Promise<GroupChat[]> {

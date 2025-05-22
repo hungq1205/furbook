@@ -1,6 +1,6 @@
 import { User } from '../types/user';
 import { userService } from './userService';
-import { BASE_URL, defaultHeaders, HttpError } from './util';
+import { BASE_URL, defaultAuthHeaders, defaultHeaders, HttpError } from './util';
 
 const AUTH_URL = `${BASE_URL}/auth`;
 
@@ -30,6 +30,18 @@ class AuthService {
       AuthService.instance = new AuthService();
     }
     return AuthService.instance;
+  }
+
+  async check() {
+    const response = await fetch(`${AUTH_URL}/check`, { headers: defaultAuthHeaders() });
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+
+    const { token, user } = await response.json() as { token: string; user: User };
+    this.setToken(token);
+    this.currentUser = user;
+
+    const friends = await userService.getFriends();
+    this.currentUserFriends = friends;
   }
 
   async signup(data: SignupPayload): Promise<void> {

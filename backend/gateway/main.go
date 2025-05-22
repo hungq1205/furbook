@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,7 @@ type LoginOrSignUpRequest struct {
 func main() {
 	app := gin.New()
 
+	app.RedirectTrailingSlash = false
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -60,9 +62,16 @@ func MakeGatewayHandler(app *gin.Engine) {
 	group := app.Group("")
 	group.Use(internal.AuthMiddleware())
 
+	group.Any("/api/message", ProxyTo(messageServiceURL))
 	group.Any("/api/message/*path", ProxyTo(messageServiceURL))
+
+	group.Any("/api/group", ProxyTo(messageServiceURL))
 	group.Any("/api/group/*path", ProxyTo(messageServiceURL))
+
+	group.Any("/api/post", ProxyTo(postServiceURL))
 	group.Any("/api/post/*path", ProxyTo(postServiceURL))
+
+	group.Any("/api/user", ProxyTo(userServiceURL))
 	group.Any("/api/user/*path", ProxyTo(userServiceURL))
 }
 
@@ -132,6 +141,26 @@ func MakeAuthHandler(app *gin.Engine, authRepo *auth.Repository, userClient clie
 				return
 			}
 			c.JSON(http.StatusCreated, gin.H{"user": user})
+		})
+
+		group.GET("/check", func(c *gin.Context) {
+			authHeader := c.Request.Header.Get("Authorization")
+			if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
+				return
+			}
+			token := strings.TrimPrefix(authHeader, "Bearer ")
+			username, err := internal.ParseJwt(token)
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+			user, err := userClient.GetUser(username)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"token": token, "user": user})
 		})
 	}
 }

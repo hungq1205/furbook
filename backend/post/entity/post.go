@@ -36,6 +36,6 @@ type Post struct {
 }
 
 type Location struct {
-	Longitude float32 `bson:"longitude" json:"longitude"`
-	Latitude  float32 `bson:"latitude" json:"latitude"`
+	Longitude float64 `bson:"longitude" json:"longitude"`
+	Latitude  float64 `bson:"latitude" json:"latitude"`
 }

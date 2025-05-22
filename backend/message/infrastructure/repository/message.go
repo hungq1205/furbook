@@ -17,7 +17,7 @@ func NewMessageRepository(db *gorm.DB) *MessageRepository {
 }
 
 func (r *MessageRepository) CreateMessage(message *entity.Message) (*entity.Message, error) {
-	err := r.db.Create(message).Error
+	err := r.db.Model(&entity.Message{}).Create(message).Error
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (r *MessageRepository) CreateMessage(message *entity.Message) (*entity.Mess
 }
 
 func (r *MessageRepository) DeleteMessagesByUser(username string) error {
-	err := r.db.Where("username = ?", username).Delete(&entity.Message{}).Error
+	err := r.db.Model(&entity.Message{}).Where("username = ?", username).Delete(&entity.Message{}).Error
 	if err != nil {
 		return err
 	}
@@ -35,6 +35,7 @@ func (r *MessageRepository) DeleteMessagesByUser(username string) error {
 func (r *MessageRepository) GetGroupMessageList(groupID int, pagination util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
+		Model(&entity.Message{}).
 		Joins("join groups g on g.id = messages.group_id").
 		Where("group_id = ?", groupID).
 		Find(&messages).
@@ -51,12 +52,14 @@ func (r *MessageRepository) GetGroupMessageList(groupID int, pagination util.Pag
 func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pagination util.Pagination) ([]*entity.Message, error) {
 	var messages []*entity.Message
 	err := r.db.
-		Joins("join user_groups ug1 on ug1.username = ?", userA).
-		Joins("join user_groups ug2 on ug2.username = ?", userB).
+		Model(&entity.Message{}).
+		Joins("join group_users ug1 on ug1.username = ?", userA).
+		Joins("join group_users ug2 on ug2.username = ? and ug2.group_id = ug1.group_id", userB).
+		Joins("join groups on groups.id = messages.group_id").
 		Where("groups.is_direct = ?", true).
-		Find(&messages).
 		Offset(pagination.Offset()).
 		Limit(pagination.Size).
+		Find(&messages).
 		Error
 	if err != nil {
 		return nil, err
@@ -68,6 +71,7 @@ func (r *MessageRepository) GetDirectMessageList(userA string, userB string, pag
 func (r *MessageRepository) GetLastMessage(groupID int) (*entity.Message, error) {
 	var message entity.Message
 	err := r.db.
+		Model(&entity.Message{}).
 		Where("group_id = ?", groupID).
 		// Order("created_at desc").
 		First(&message).
