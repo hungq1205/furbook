@@ -13,7 +13,7 @@ func MakeHandler(app *gin.Engine, groupService group.UseCase, messageService mes
 	groupGroup := app.Group("/api/group")
 	{
 		groupGroup.GET("/:groupId", func(ctx *gin.Context) {
-			getGroup(ctx, groupService, messageService)
+			getGroup(ctx, groupService, messageService, userClient)
 		})
 
 		groupGroup.GET("/:groupId/members", func(ctx *gin.Context) {
@@ -23,11 +23,11 @@ func MakeHandler(app *gin.Engine, groupService group.UseCase, messageService mes
 		authGroup := groupGroup.Group("", middleware.MustAuthMiddleware())
 
 		authGroup.GET("", func(ctx *gin.Context) {
-			getGroupsOfUser(ctx, groupService, messageService)
+			getGroupsOfUser(ctx, groupService, messageService, userClient)
 		})
 
 		authGroup.POST("", func(ctx *gin.Context) {
-			createGroup(ctx, groupService, messageService)
+			createGroup(ctx, groupService, messageService, userClient)
 		})
 
 		authGroup.DELETE("", func(ctx *gin.Context) {
@@ -35,15 +35,15 @@ func MakeHandler(app *gin.Engine, groupService group.UseCase, messageService mes
 		})
 
 		authGroup.PUT("", func(ctx *gin.Context) {
-			updateGroup(ctx, groupService, messageService)
+			updateGroup(ctx, groupService, messageService, userClient)
 		})
 
 		authGroup.POST("/:groupId/members", func(ctx *gin.Context) {
-			addMemberToGroup(ctx, groupService, messageService)
+			addMemberToGroup(ctx, groupService, messageService, userClient)
 		})
 
 		authGroup.DELETE("/:groupId/members", func(ctx *gin.Context) {
-			removeMemberToGroup(ctx, groupService, messageService)
+			removeMemberToGroup(ctx, groupService, messageService, userClient)
 		})
 	}
 }

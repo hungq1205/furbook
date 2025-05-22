@@ -5,6 +5,8 @@ export interface GroupChat {
   ownerName: string;
   members: string[];
   lastMessage: Message | null;
+
+  avatar?: string;
 }
 
 export interface Message {

@@ -14,18 +14,26 @@ import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
 import { authService } from './services/authService';
 import Auth from './pages/Auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
-    authService.check().catch((error) => {
-      console.error('Error checking authentication:', error);
-      authService.logout();
-      window.location.href = '/login';
-    });
+    authService.check()
+      .then(() => {
+        setAuthChecked(true);
+      })
+      .catch((error) => {
+        console.error('Error checking authentication:', error);
+        authService.logout();
+        window.location.href = '/login';
+      });
   }, [authService.getToken()]);
-  
+
+  if (!authChecked)
+    return <div>Loading...</div>;
+
   return authService.isAuthenticated() ? children : <Navigate to="/login" replace />;
 };
 

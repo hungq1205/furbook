@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, Video, Send } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import Button from '../common/Button';
@@ -35,20 +35,19 @@ const CreatePostInput: React.FC = () => {
         <div className="flex-1">
           <div 
             className="border rounded-lg p-3 w-full bg-gray-50 hover:bg-white focus-within:bg-white transition-colors"
-            onClick={handleFocus}
           >
             <textarea
               placeholder="Share what your pet is up to..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              onFocus={handleFocus}
-              className="w-full bg-transparent border-none resize-none focus:outline-none min-h-[40px]"
-              rows={expanded ? 3 : 1}
+              onClick={handleFocus}
+              className="w-full bg-transparent border-none resize-none focus:outline-none min-h-[15px]"
+              rows={expanded ? 2 : 1}
             />
             
             {expanded && (
               <motion.div 
-                className="flex flex-col space-y-3 mt-3"
+                className="flex flex-col space-y-2 my-1"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 transition={{ duration: 0.3 }}
@@ -63,23 +62,31 @@ const CreatePostInput: React.FC = () => {
                     <span>Video</span>
                   </button>
                 </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="ghost" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    variant="primary" 
-                    onClick={handleSubmit}
-                    disabled={!content.trim()}
-                    icon={<Send size={16} />}
-                  >
-                    Post
-                  </Button>
-                </div>
               </motion.div>
             )}
           </div>
+          {expanded && (
+            <motion.div 
+              className="flex flex-col space-y-3 mt-3"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex justify-end space-x-2">
+                <Button variant="ghost" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={handleSubmit}
+                  disabled={!content.trim()}
+                  icon={<Send size={16} />}
+                >
+                  Post
+                </Button>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </Card>

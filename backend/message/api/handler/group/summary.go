@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func getGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	groupIdParam := ctx.Param("groupId")
 	groupId, err := strconv.Atoi(groupIdParam)
 	if err != nil {
@@ -26,7 +26,7 @@ func getGroup(ctx *gin.Context, groupService group.UseCase, messageService messa
 		return
 	}
 
-	groupPresenter, err := groupEntityToPresenter(g, groupService, messageService)
+	groupPresenter, err := groupEntityToPresenter(g, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -35,7 +35,7 @@ func getGroup(ctx *gin.Context, groupService group.UseCase, messageService messa
 	ctx.JSON(http.StatusOK, groupPresenter)
 }
 
-func createGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func createGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	var body payload.CreateGroupPayload
 	err := ctx.ShouldBindJSON(&body)
 	if err != nil {
@@ -49,7 +49,7 @@ func createGroup(ctx *gin.Context, groupService group.UseCase, messageService me
 		return
 	}
 
-	groupPresenter, err := groupEntityToPresenter(g, groupService, messageService)
+	groupPresenter, err := groupEntityToPresenter(g, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -58,7 +58,7 @@ func createGroup(ctx *gin.Context, groupService group.UseCase, messageService me
 	ctx.JSON(http.StatusCreated, groupPresenter)
 }
 
-func updateGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func updateGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	groupIdParam := ctx.Param("groupId")
 	groupId, err := strconv.Atoi(groupIdParam)
 	if err != nil {
@@ -91,7 +91,7 @@ func updateGroup(ctx *gin.Context, groupService group.UseCase, messageService me
 		return
 	}
 
-	groupPresenter, err := groupEntityToPresenter(g, groupService, messageService)
+	groupPresenter, err := groupEntityToPresenter(g, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -129,7 +129,7 @@ func deleteGroup(ctx *gin.Context, groupService group.UseCase) {
 	ctx.Status(http.StatusNoContent)
 }
 
-func addMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func addMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	var body payload.GroupMemberPayload
 	err := ctx.ShouldBindJSON(&body)
 	if err != nil {
@@ -155,7 +155,7 @@ func addMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageServi
 		return
 	}
 
-	groupPresenter, err := groupEntityToPresenter(g, groupService, messageService)
+	groupPresenter, err := groupEntityToPresenter(g, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -164,7 +164,7 @@ func addMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageServi
 	ctx.JSON(http.StatusOK, groupPresenter)
 }
 
-func removeMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func removeMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	var body payload.GroupMemberPayload
 	err := ctx.ShouldBindJSON(&body)
 	if err != nil {
@@ -190,7 +190,7 @@ func removeMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageSe
 		return
 	}
 
-	groupPresenter, err := groupEntityToPresenter(g, groupService, messageService)
+	groupPresenter, err := groupEntityToPresenter(g, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -199,7 +199,7 @@ func removeMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageSe
 	ctx.JSON(http.StatusOK, groupPresenter)
 }
 
-func getGroupsOfUser(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase) {
+func getGroupsOfUser(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	username := util.MustGetUsername(ctx)
 	pagination := util.ExtractPagination(ctx)
 
@@ -209,7 +209,7 @@ func getGroupsOfUser(ctx *gin.Context, groupService group.UseCase, messageServic
 		return
 	}
 
-	groupPresenters, err := groupListEntityToPresenter(groups, groupService, messageService)
+	groupPresenters, err := groupListEntityToPresenter(groups, util.MustGetUsername(ctx), groupService, messageService, userClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
