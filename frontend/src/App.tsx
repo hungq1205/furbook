@@ -12,33 +12,35 @@ import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
-import { authService } from './services/authService';
+import { AuthProvider, useAuth } from './services/authService';
 import Auth from './pages/Auth';
 import { useEffect, useState } from 'react';
 
-// ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const [authChecked, setAuthChecked] = useState(false);
+  const authService = useAuth();
+
   useEffect(() => {
-    authService.check()
+    authService.refresh()
       .then(() => {
         setAuthChecked(true);
       })
       .catch((error) => {
         console.error('Error checking authentication:', error);
         authService.logout();
-        window.location.href = '/login';
+        setAuthChecked(false);
       });
-  }, [authService.getToken()]);
+  }, []);
 
   if (!authChecked)
     return <div>Loading...</div>;
 
-  return authService.isAuthenticated() ? children : <Navigate to="/login" replace />;
+  return authService.isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <AnimatePresence mode="wait">
         <Routes>
@@ -56,7 +58,7 @@ function App() {
             <Route path="lost-pets" element={<LostPets />} />
             <Route path="messages" element={<Messages />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="profile/:id" element={<Profile />} />
+            <Route path="profile/:username" element={<Profile />} />
             <Route path="post/:id" element={<PostDetail />} />
             <Route path="lost-pets/:id" element={<PostDetail />} />
           </Route>
@@ -76,6 +78,7 @@ function App() {
         </Routes>
       </AnimatePresence>
     </Router>
+    </AuthProvider>
   );
 }
 

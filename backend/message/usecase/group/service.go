@@ -62,6 +62,14 @@ func (s *Service) DeleteGroup(groupID int) error {
 	return nil
 }
 
+func (s *Service) GetDirectGroup(userA string, userB string) (*entity.Group, error) {
+	group, err := s.groupUserRepo.GetDirectGroup(userA, userB)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
 func (s *Service) GetGroupsOfUser(username string, pagination util.Pagination) ([]*entity.Group, error) {
 	users, err := s.groupUserRepo.GetGroupsOfUser(username, pagination)
 	if err != nil {

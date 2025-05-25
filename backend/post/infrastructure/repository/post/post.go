@@ -246,7 +246,7 @@ func (p *Repository) UpsertInteraction(ctx context.Context, postId, username str
 	if err != nil {
 		return err
 	}
-	exists, err := p.updateInteraction(ctx, postOID, itype)
+	exists, err := p.updateInteraction(ctx, postOID, username, itype)
 	if err != nil {
 		return err
 	}
@@ -265,13 +265,9 @@ func (p *Repository) UpsertInteraction(ctx context.Context, postId, username str
 	return err
 }
 
-func (p *Repository) updateInteraction(ctx context.Context, id primitive.ObjectID, itype entity.InteractionType) (bool, error) {
-	result, err := p.postCollection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{
-		"$push": bson.M{
-			"interactions": bson.M{
-				"type": itype,
-			},
-		},
+func (p *Repository) updateInteraction(ctx context.Context, id primitive.ObjectID, username string, itype entity.InteractionType) (bool, error) {
+	result, err := p.postCollection.UpdateOne(ctx, bson.M{"_id": id, "interactions.username": username}, bson.M{
+		"$set": bson.M{"interactions.$.type": itype},
 	})
 	if err != nil {
 		return false, err
@@ -290,5 +286,27 @@ func (p *Repository) DeleteInteraction(ctx context.Context, postId, username str
 		},
 	})
 
+	return err
+}
+
+func (p *Repository) Participate(ctx context.Context, postId, username string) error {
+	postOID, err := primitive.ObjectIDFromHex(postId)
+	if err != nil {
+		return err
+	}
+	_, err = p.postCollection.UpdateOne(ctx, bson.M{"_id": postOID}, bson.M{
+		"$addToSet": bson.M{"participants": username},
+	})
+	return err
+}
+
+func (p *Repository) Unparticipate(ctx context.Context, postId, username string) error {
+	postOID, err := primitive.ObjectIDFromHex(postId)
+	if err != nil {
+		return err
+	}
+	_, err = p.postCollection.UpdateOne(ctx, bson.M{"_id": postOID}, bson.M{
+		"$pull": bson.M{"participants": username},
+	})
 	return err
 }

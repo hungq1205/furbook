@@ -17,12 +17,15 @@ func groupEntityToPresenter(in *entity.Group, username string, groupService grou
 	if err != nil {
 		return nil, err
 	}
-	lastMessage := presenter.Message{
-		ID:        lastMessageEntity.ID,
-		Content:   lastMessageEntity.Content,
-		Username:  lastMessageEntity.Username,
-		GroupID:   lastMessageEntity.GroupID,
-		CreatedAt: lastMessageEntity.CreatedAt,
+	var lastMessage *presenter.Message
+	if lastMessageEntity != nil {
+		lastMessage = &presenter.Message{
+			ID:        lastMessageEntity.ID,
+			Content:   lastMessageEntity.Content,
+			Username:  lastMessageEntity.Username,
+			GroupID:   lastMessageEntity.GroupID,
+			CreatedAt: lastMessageEntity.CreatedAt,
+		}
 	}
 
 	var oppUsername string

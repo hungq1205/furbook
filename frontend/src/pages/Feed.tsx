@@ -5,16 +5,17 @@ import PostCard from '../components/feed/PostCard';
 import { Post } from '../types/post';
 import { postService } from '../services/postService';
 import { handleError } from '../utils/errors';
-import { authService } from '../services/authService';
+import { useAuth } from '../services/authService';
 // import { posts } from '../data/mockData';
 
 const Feed: React.FC = () => {
+  const authService = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    postService.getByUsers(authService.getCurrentUserFriends().map(f => f.username))
+    postService.getByUsers(authService.currentUserFriends.map(f => f.username))
       .then(posts => setPosts(posts))
-      .catch(error => handleError(error, 'Failed to fetch posts'));
+      .catch(error => handleError(error, 'Failed to fetch posts', authService.logout));
   }, []);
   
   return (

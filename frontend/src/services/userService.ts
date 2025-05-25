@@ -1,5 +1,5 @@
-import { User } from '../types/user';
-import { defaultAuthHeaders, BASE_URL, HttpError } from './util';
+import { Friendship, User } from '../types/user';
+import { BASE_URL, defaultAuthHeaders, HttpError } from './util';
 
 const USER_URL = `${BASE_URL}/user`;
 
@@ -42,26 +42,15 @@ export const userService = {
     const response = await fetch(`${USER_URL}/friend-requests`, {
       method: 'POST',
       headers: defaultAuthHeaders(),
-      body: JSON.stringify({ friend: username })
+      body: JSON.stringify({ receiver: username })
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());;
   },
 
-  async checkFriendship(username: string): Promise<{ isFriend: boolean }> {
-    const response = await fetch(`${USER_URL}/check-friendship`, {
-      method: 'POST',
+  async checkFriendship(username: string): Promise<{ friendship: Friendship }> {
+    const response = await fetch(`${USER_URL}/check-friendship/${username}`, {
+      method: 'GET',
       headers: defaultAuthHeaders(),
-      body: JSON.stringify({ username })
-    });
-    if (!response.ok) throw new HttpError(response.status, await response.json());;
-    return response.json();
-  },
-
-  async checkFriendRequest(username: string): Promise<{ exists: boolean, type: 'sent' | 'received' | null }> {
-    const response = await fetch(`${USER_URL}/check-friend-request`, {
-      method: 'POST',
-      headers: defaultAuthHeaders(),
-      body: JSON.stringify({ username })
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());;
     return response.json();

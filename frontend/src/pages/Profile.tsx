@@ -1,49 +1,118 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
-import { posts, currentUser, friends } from '../data/mockData';
+// import { posts, currentUser, friends } from '../data/mockData';
 import PostCard from '../components/feed/PostCard';
 import LostPetCard from '../components/lost-pet/LostPetCard';
+import { useAuth } from '../services/authService';
+import { Post } from '../types/post';
+import { Friendship, User } from '../types/user';
+import { userService } from '../services/userService';
+import { postService } from '../services/postService';
+import { handleError } from '../utils/errors';
 
 const Profile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const authService = useAuth();
+  const { username } = useParams<{ username: string }>();
+  const [profileUser, setProfileUser] = useState<User | null>();
   const [activeTab, setActiveTab] = useState<'posts' | 'lost-pets' | 'participated'>('posts');
-  const [friendStatus, setFriendStatus] = useState<'none' | 'pending' | 'friends'>('none');
-  
-  const isOwnProfile = !id || id === currentUser.username;
-  const profileUser = isOwnProfile ? currentUser : friends.find(f => f.username === id) || currentUser;
-  
-  const userPosts = posts.filter(post => post.username === profileUser.username && post.type === 'blog');
-  const userLostPets = posts.filter(post => post.username === profileUser.username && (post.type === 'lost' || post.type === 'found'));
-  const participatedPosts = posts.filter(post => 
-    (post.type === 'lost' || post.type === 'found') && 
-    post.participants?.includes(profileUser.username)
-  );
+  const [friendStatus, setFriendStatus] = useState<Friendship>('none');
+  const [posts, setPosts] = useState<Post[]>([]); 
+  const lostPosts = useRef<Post[]>([]);
+
+  const currentUser = authService.currentUser!;
+
+  const isOwnProfile = !username || username === currentUser.username;
+
+  useEffect(() => {
+    if (isOwnProfile) {
+      setProfileUser(currentUser);
+      return;
+    }
+    userService.getUser(username)
+      .then(setProfileUser)
+      .catch(error => {
+        console.error('Failed to fetch user:', error);
+        setProfileUser(null);
+      });
+    userService.checkFriendship(username)
+      .then(res => setFriendStatus(res.friendship))
+      .catch(error => console.error('Failed to check friendship:', error));
+  }, [username]);
+
+  useEffect(() => {
+    if (!profileUser) return;
+    postService.getByUsername(profileUser.username)
+      .then(posts => {
+        setPosts(posts);
+        lostPosts.current = posts.filter(post => post.type !== 'blog');
+      })
+      .catch(error => console.error('Failed to fetch posts:', error));
+  }, [profileUser]);
+
+  const handleFriendRequest = (resultFriendship: Friendship) => {
+    if (!profileUser) return;
+    userService.sendFriendRequest(profileUser.username)
+      .then(() => {
+        setFriendStatus(resultFriendship);
+        authService.refresh();
+      })
+      .catch(error => handleError('Failed to sent friend request:', error, authService.logout));
+  }
+
+  const handleFriendRequestRevoke = (resultFriendship: Friendship) => {
+    if (!profileUser) return;
+    userService.revokeFriendRequest(profileUser.username)
+      .then(() => setFriendStatus(resultFriendship))
+      .catch(error => handleError('Failed to revoke friend request:', error, authService.logout));
+  }
+
+  const handleUnfriend = (resultFriendship: Friendship) => {
+    if (!profileUser) return;
+    userService.removeFriend(profileUser.username)
+      .then(() => {
+        setFriendStatus(resultFriendship);
+        authService.refresh();
+      })
+      .catch(error => handleError('Failed to unfriend request:', error, authService.logout));
+  }
+
+  const handleFriendRequestDecline = () => {
+    if (!profileUser) return;
+    userService.declineFriendRequest(profileUser.username)
+      .then(() => setFriendStatus('none'))
+      .catch(error => handleError('Failed to decline friend request:', error, authService.logout));
+  }
 
   const handleFriendAction = () => {
     switch (friendStatus) {
       case 'none':
-        setFriendStatus('pending');
+        handleFriendRequest('sent');
         break;
-      case 'pending':
-        setFriendStatus('none');
+      case 'sent':
+        handleFriendRequestRevoke('none');
         break;
-      case 'friends':
-        if (window.confirm('Are you sure you want to unfriend this user?')) {
-          setFriendStatus('none');
-        }
+      case 'received':
+        handleFriendRequest('friend');
+        break;
+      case 'friend':
+        if (window.confirm(`Are you sure you want to unfriend with this ${profileUser?.displayName} #${profileUser?.username}?`))
+          handleUnfriend('none');
         break;
     }
   };
-  
+
   const tabs = [
-    { id: 'posts', label: 'Posts', count: userPosts.length },
-    { id: 'lost-pets', label: 'Lost & Found', count: userLostPets.length },
-    { id: 'participated', label: 'Participated', count: participatedPosts.length },
+    { username: 'posts', label: 'Posts', count: posts.length },
+    { username: 'lost-pets', label: 'Lost & Found', count: lostPosts.current.length },
+    { username: 'participated', label: 'Participated', count: 1 },
   ];
+
+  if (!profileUser)
+    return;
 
   return (
     <motion.div
@@ -58,14 +127,14 @@ const Profile: React.FC = () => {
             <Avatar src={profileUser.avatar} alt={profileUser.displayName} size="xl" />
           </div>
           
-          <div className="pt-12 flex justify-between items-start">
+          <div className="pt-12 flex items-start">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{profileUser.displayName}</h1>
               <p className="text-gray-600 mt-1">{profileUser.bio}</p>
               
               <div className="flex flex-wrap gap-6 mt-4">
                 <div className="text-center">
-                  <p className="text-xl font-bold text-gray-900">{userPosts.length}</p>
+                  <p className="text-xl font-bold text-gray-900">{posts.length}</p>
                   <p className="text-sm text-gray-500">Posts</p>
                 </div>
                 <div className="text-center">
@@ -73,21 +142,31 @@ const Profile: React.FC = () => {
                   <p className="text-sm text-gray-500">Friends</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xl font-bold text-gray-900">{participatedPosts.length}</p>
+                  <p className="text-xl font-bold text-gray-900">{1}</p>
                   <p className="text-sm text-gray-500">Helped</p>
                 </div>
               </div>
             </div>
-
+            <div className="grow"/>
             {!isOwnProfile && (
+              <>
               <Button
-                variant={friendStatus === 'friends' ? 'outline' : 'primary'}
+                variant={friendStatus === 'friend' ? 'outline' : (friendStatus === 'sent' ? 'warning' : 'primary')}
+                ring={false}
                 onClick={handleFriendAction}
               >
                 {friendStatus === 'none' && 'Add Friend'}
-                {friendStatus === 'pending' && 'Cancel Request'}
-                {friendStatus === 'friends' && 'Unfriend'}
+                {friendStatus === 'sent' && 'Revoke Request'}
+                {friendStatus === 'received' && 'Accept'}
+                {friendStatus === 'friend' && 'Unfriend'}
               </Button>
+              { friendStatus === 'received' && 
+                <>
+                <div className="w-2"/>
+                <Button variant='warning' ring={false} onClick={handleFriendRequestDecline}> Decline </Button> 
+                </>
+              }
+              </>
             )}
           </div>
         </div>
@@ -98,13 +177,13 @@ const Profile: React.FC = () => {
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
               <button
-                key={tab.id}
+                key={tab.username}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
+                  activeTab === tab.username
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                onClick={() => setActiveTab(tab.username as typeof activeTab)}
               >
                 {tab.label}
                 <span className="ml-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
@@ -119,10 +198,10 @@ const Profile: React.FC = () => {
       <div>
         {activeTab === 'posts' && (
           <div className="space-y-4">
-            {userPosts.length > 0 ? (
-              userPosts.map(post => (
+            {posts.length > 0 ? (
+              posts.map(post => (
                 <motion.div
-                  key={post.id}
+                  key={post.username}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
@@ -138,10 +217,10 @@ const Profile: React.FC = () => {
         
         {activeTab === 'lost-pets' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {userLostPets.length > 0 ? (
-              userLostPets.map(post => (
+            {lostPosts.current.length > 0 ? (
+              lostPosts.current.map(post => (
                 <motion.div
-                  key={post.id}
+                  key={post.username}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
@@ -157,10 +236,10 @@ const Profile: React.FC = () => {
         
         {activeTab === 'participated' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {participatedPosts.length > 0 ? (
-              participatedPosts.map(post => (
+            {posts.length > 0 ? (
+              posts.map(post => (
                 <motion.div
-                  key={post.id}
+                  key={post.username}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}

@@ -7,15 +7,16 @@ import Button from '../components/common/Button';
 import { Post } from '../types/post';
 import { postService } from '../services/postService';
 import { handleError } from '../utils/errors';
-import { authService } from '../services/authService';
+import { useAuth } from '../services/authService';
 
 const LostPets: React.FC = () => {
+  const authService = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    postService.getByUsers(authService.getCurrentUserFriends().map(f => f.username))
+    postService.getByUsers(authService.currentUserFriends!.map(f => f.username))
       .then(posts => setPosts(posts.filter(post => post.type === 'lost' || post.type === 'found')))
-      .catch(error => handleError(error, 'Failed to fetch posts'));
+      .catch(error => handleError(error, 'Failed to fetch posts', authService.logout));
   }, []);
 
   return (

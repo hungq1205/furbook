@@ -11,9 +11,11 @@ type UseCase interface {
 	CreateGroup(ownername string, groupName string, members []string) (*entity.Group, error)
 	DeleteGroup(groupID int) error
 
+	GetDirectGroup(userA string, userB string) (*entity.Group, error)
 	GetGroupsOfUser(username string, pagination util.Pagination) ([]*entity.Group, error)
 	CheckOwnership(username string, groupID int) (bool, error)
 	CheckMembership(username string, groupID int) (bool, error)
+
 	GetMembers(groupID int) ([]string, error)
 	AddMember(groupID int, username string) (*entity.Group, error)
 	RemoveMember(groupID int, username string) (*entity.Group, error)

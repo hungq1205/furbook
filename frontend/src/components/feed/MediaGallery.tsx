@@ -1,4 +1,4 @@
-import React, { MouseEvent, MouseEventHandler, useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Media } from '../../types/post';
 

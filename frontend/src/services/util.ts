@@ -1,5 +1,3 @@
-import { authService } from "./authService";
-
 export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export class HttpError extends Error {
@@ -14,6 +12,6 @@ export const defaultHeaders = {
 };
 
 export const defaultAuthHeaders = () => ({
-    'Content-Type': 'application/json',
-    ...authService.getAuthHeaders()
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('token')}`,
 });

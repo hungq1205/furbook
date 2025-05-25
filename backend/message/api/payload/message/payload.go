@@ -1,7 +1,6 @@
 package payload
 
 type CreateMessagePayload struct {
-	GroupID int    `json:"group_id"`
 	Content string `json:"content"`
 }
 

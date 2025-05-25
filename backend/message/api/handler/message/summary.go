@@ -61,15 +61,22 @@ func getDirectMessageList(ctx *gin.Context, messageService message.UseCase) {
 }
 
 func createGroupMessage(ctx *gin.Context, messageService message.UseCase, groupService group.UseCase) {
+	groupIdParam := ctx.Param("groupID")
+	groupID, err := strconv.Atoi(groupIdParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	var body payload.CreateMessagePayload
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	checkMembership(ctx, body.GroupID, groupService)
+	checkMembership(ctx, groupID, groupService)
 
-	msg, err := messageService.SendMessage(ctx.MustGet("username").(string), body.Content, body.GroupID)
+	msg, err := messageService.SendMessage(ctx.MustGet("username").(string), body.Content, groupID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

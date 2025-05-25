@@ -7,10 +7,10 @@ type User struct {
 }
 
 type Group struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	LastMessage Message `json:"last_message"`
-	IsDirect    bool    `json:"is_direct"`
+	ID          int      `json:"id"`
+	Name        string   `json:"name"`
+	IsDirect    bool     `json:"is_direct"`
+	LastMessage *Message `json:"last_message"`
 
 	// Undirect
 	OwnerName string   `json:"owner_name"`

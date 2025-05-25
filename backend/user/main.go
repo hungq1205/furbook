@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"user/api/client"
 	"user/api/user"
 	friendRepo "user/infrastructure/repository/friend"
 	userRepo "user/infrastructure/repository/user"
@@ -36,8 +37,9 @@ func makeHandler() *gin.Engine {
 
 	friendService := friendService.NewService(friendRepo)
 	userService := userService.NewService(userRepo)
+	groupClient := client.NewGroupClient("http://message:8080")
 
-	user.MakeHandler(app, userService, friendService)
+	user.MakeHandler(app, userService, friendService, groupClient)
 
 	return app
 }

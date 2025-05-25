@@ -1,5 +1,6 @@
 import { HttpError } from './util';
 
+// TODO: replace with actual url
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/<your-cloud-name>/upload';
 const CLOUDINARY_UPLOAD_PRESET = '<your-upload-preset>';
 

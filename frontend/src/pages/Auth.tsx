@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { PawPrint, User2, UserRoundSearch, Lock, LockKeyhole, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
-import { authService } from '../services/authService';
+import { useAuth } from '../services/authService';
 import { HttpError } from '../services/util';
 
 const Auth: React.FC = () => {
+  const authService = useAuth();
   const navigate = useNavigate();
+
   const [isLogin, setIsLogin] = useState(true)
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');

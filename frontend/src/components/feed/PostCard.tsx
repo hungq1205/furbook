@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Post } from '../../types/post';
@@ -7,22 +7,35 @@ import Card from '../common/Card';
 import IconButton from '../common/IconButton';
 import MediaGallery from './MediaGallery';
 import EditPostModal from '../post/EditPostModal';
+import { BlogPostPayload } from '../../services/postService';
 import { formatDistanceToNow } from '../../utils/dateUtils';
 // import { currentUser } from '../../data/mockData';
 import { postService } from '../../services/postService';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../services/authService';
+import { handleError } from '../../utils/errors';
 
 interface PostCardProps {
   post: Post;
-  onPostUpdated?: (post: Post) => void;
-  onPostDeleted?: (postId: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted }) => {
+const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const authService = useAuth();
   const navigate = useNavigate();
+
   const [showOptions, setShowOptions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const isOwnPost = post.username === authService.getCurrentUser().username;
+  const [userInteracted, setUserInteracted] = React.useState<Boolean>(false);
+  const [interactionCount, setInteractionCount] = useState<number>(0);
+  const isOwnPost = post.username === authService.currentUser!.username;
+
+  useEffect(() => {
+    const interacted = post.interactions.some(i => i.username === authService.currentUser!.username)
+    const ic = interacted ? 
+      post.interactions.length - 1 : 
+      post.interactions.length;
+    setUserInteracted(interacted);
+    setInteractionCount(ic);
+  }, [post]);
 
   const handleContentClick = () => {
     navigate(`/post/${post.id}`);
@@ -43,7 +56,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await postService.delete(post.id);
-        onPostDeleted?.(post.id);
       } catch (error) {
         console.error('Failed to delete post:', error);
       }
@@ -51,13 +63,23 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
     setShowOptions(false);
   };
 
-  const handleSaveEdit = async (updatedPost: Post) => {
-    onPostUpdated?.(updatedPost);
+  const handleSaveEdit = async () => {
+    postService.updateContent(post.id, { content: post.content, medias: post.medias } as BlogPostPayload);
     setShowEditModal(false);
   };
 
-  const likeCount = post.interactions.filter(i => i.type === 'like').length;
-  const shareCount = post.interactions.filter(i => i.type === 'share').length;
+  const handleInteract = () => {
+    if (!post) return;
+    if (userInteracted)
+      postService.deleteInteraction(post.id)
+        .then(() => userInteracted && setUserInteracted(false))
+        .catch(error => handleError(error, 'Failed to unlike post', authService.logout));
+    else
+      postService.upsertInteraction(post.id)
+        .then(() => !userInteracted && setUserInteracted(true))
+        .catch(error => handleError(error, 'Failed to like post', authService.logout));
+    setUserInteracted(!userInteracted);
+  };
 
   return (
     <>
@@ -116,9 +138,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
           
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
             <div className="flex space-x-3">
-              <button className="flex items-center text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                <Heart size={18} className="mr-1" />
-                <span>{likeCount}</span>
+              <button className="flex items-center text-sm text-gray-600 hover:text-primary-600 transition-colors" 
+                onClick={handleInteract}
+              >
+                { userInteracted ? 
+                  <Heart fill="red" size={18} className="mr-1 text-red-500" /> :
+                  <Heart size={18} className="mr-1" /> 
+                }
+                <span>{ userInteracted ? interactionCount + 1 : interactionCount }</span>
               </button>
               <button 
                 className="flex items-center text-sm text-gray-600 hover:text-primary-600 transition-colors"
@@ -126,10 +153,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostUpdated, onPostDeleted 
               >
                 <MessageCircle size={18} className="mr-1" />
                 <span>{post.commentNum}</span>
-              </button>
-              <button className="flex items-center text-sm text-gray-600 hover:text-primary-600 transition-colors">
-                <Share2 size={18} className="mr-1" />
-                <span>{shareCount}</span>
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"user/api/client"
 	"user/api/middleware"
 	"user/usecase/friend"
 	"user/usecase/user"
@@ -8,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend.UseCase) {
+func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend.UseCase, groupClient client.GroupClient) {
 	userGroup := app.Group("/api/user")
 	{
 		// Public routes
@@ -36,10 +37,10 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 		})
 
 		authGroup.GET("/friends", func(c *gin.Context) {
-			GetFriendList(c, friendService)
+			GetFriendList(c, friendService, groupClient)
 		})
 
-		authGroup.POST("/check-friendship", func(c *gin.Context) {
+		authGroup.GET("/check-friendship/:username", func(c *gin.Context) {
 			CheckFriendship(c, friendService)
 		})
 
@@ -49,10 +50,6 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 
 		authGroup.GET("/friend-requests", func(c *gin.Context) {
 			GetFriendRequestList(c, friendService)
-		})
-
-		authGroup.POST("/check-friend-request", func(c *gin.Context) {
-			CheckFriendRequest(c, friendService)
 		})
 
 		authGroup.POST("/friend-requests", func(c *gin.Context) {

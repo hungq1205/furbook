@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"user/api/client"
 	"user/api/payload"
 	"user/usecase/friend"
 	"user/usecase/user"
@@ -100,13 +101,13 @@ func DeleteUser(ctx *gin.Context, Service user.UseCase) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
-func GetFriendList(ctx *gin.Context, Service friend.UseCase) {
-	friendRequests, err := Service.GetFriends(util.MustGetUsername(ctx))
+func GetFriendList(ctx *gin.Context, Service friend.UseCase, groupClient client.GroupClient) {
+	friends, err := Service.GetFriends(util.MustGetUsername(ctx))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get friend list"})
 		return
 	}
-	friendPresenters, err := ListUserEntityToPresenter(friendRequests, Service)
+	friendPresenters, err := ListFriendEntityToPresenter(util.MustGetUsername(ctx), friends, Service, groupClient)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse friend list"})
 		return
@@ -143,26 +144,47 @@ func CheckFriendRequest(ctx *gin.Context, Service friend.UseCase) {
 }
 
 func CheckFriendship(ctx *gin.Context, Service friend.UseCase) {
-	var body payload.CheckFriendRequest
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-	exists, err := Service.CheckFriendship(body.User, body.Friend)
+	oppUsername := ctx.Param("username")
+	exists, err := Service.CheckFriendship(util.MustGetUsername(ctx), oppUsername)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friendship"})
 		return
 	}
-	ctx.JSON(http.StatusOK, exists)
+	if exists {
+		ctx.JSON(http.StatusOK, payload.FriendshipResponse{Friendship: payload.Friend})
+		return
+	}
+
+	exists, err = Service.CheckFriendRequest(util.MustGetUsername(ctx), oppUsername)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check user to opp friend request"})
+		return
+	}
+	if exists {
+		ctx.JSON(http.StatusOK, payload.FriendshipResponse{Friendship: payload.Sent})
+		return
+	}
+
+	exists, err = Service.CheckFriendRequest(oppUsername, util.MustGetUsername(ctx))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check opp to user friend request"})
+		return
+	}
+	if exists {
+		ctx.JSON(http.StatusOK, payload.FriendshipResponse{Friendship: payload.Received})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, payload.FriendshipResponse{Friendship: payload.None})
 }
 
 func SendFriendRequest(ctx *gin.Context, Service friend.UseCase) {
-	var body payload.CheckFriendRequest
+	var body payload.ReceiverWrapper
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	if err := Service.SendFriendRequest(body.User, body.Friend); err != nil {
+	if err := Service.SendFriendRequest(util.MustGetUsername(ctx), body.Receiver); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send friend request"})
 		return
 	}

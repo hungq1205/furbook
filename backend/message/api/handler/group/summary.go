@@ -129,6 +129,25 @@ func deleteGroup(ctx *gin.Context, groupService group.UseCase) {
 	ctx.Status(http.StatusNoContent)
 }
 
+func getDirectGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
+	username := util.MustGetUsername(ctx)
+	oppUsername := ctx.Param("username")
+
+	g, err := groupService.GetDirectGroup(username, oppUsername)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Cannot get group"})
+		return
+	}
+
+	groupPresenter, err := groupEntityToPresenter(g, username, groupService, messageService, userClient)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, groupPresenter)
+}
+
 func addMemberToGroup(ctx *gin.Context, groupService group.UseCase, messageService message.UseCase, userClient client.UserClient) {
 	var body payload.GroupMemberPayload
 	err := ctx.ShouldBindJSON(&body)

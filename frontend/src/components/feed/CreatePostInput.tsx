@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Image, Video, Send } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import Button from '../common/Button';
 import Card from '../common/Card';
 // import { currentUser } from '../../data/mockData';
 import { motion } from 'framer-motion';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../services/authService';
 import { Media, postService, BlogPostPayload } from '../../services/postService';
 import { fileService } from '../../services/fileService';
 
 const CreatePostInput: React.FC = () => {
+  const authService = useAuth();
+
   const [content, setContent] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [uploadMedias, setUploadMedias]  = useState<File[]>([]);
@@ -62,7 +64,7 @@ const CreatePostInput: React.FC = () => {
   return (
     <Card className="mb-6 p-4 bg-white">
       <div className="flex items-start space-x-3">
-        <Avatar src={authService.getCurrentUser().avatar} alt={authService.getCurrentUser().displayName} size="md" />
+        <Avatar src={authService.currentUser!.avatar} alt={authService.currentUser!.displayName} size="md" />
         
         <div className="flex-1">
           <div 

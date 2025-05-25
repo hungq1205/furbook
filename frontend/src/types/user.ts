@@ -4,4 +4,7 @@ export interface User {
   avatar: string;
   bio: string;
   friendNum: number;
+  groupid?: number;
 }
+
+export type Friendship = 'none' | 'sent' | 'received' | 'friend';

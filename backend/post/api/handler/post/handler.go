@@ -60,5 +60,13 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 		authGroup.DELETE("/:postID/interactions", func(c *gin.Context) {
 			DeleteInteraction(c, postService)
 		})
+
+		authGroup.POST("/:postID/participation", func(c *gin.Context) {
+			Participate(c, postService)
+		})
+
+		authGroup.DELETE("/:postID/participation", func(c *gin.Context) {
+			Unparticipate(c, postService)
+		})
 	}
 }

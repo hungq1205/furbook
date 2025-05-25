@@ -248,3 +248,23 @@ func DeleteInteraction(c *gin.Context, postService *post.Service) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+func Participate(c *gin.Context, postService *post.Service) {
+	ctx := c.Request.Context()
+	err := postService.Participate(ctx, c.Param("postID"), util.MustGetUsername(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusCreated)
+}
+
+func Unparticipate(c *gin.Context, postService *post.Service) {
+	ctx := c.Request.Context()
+	err := postService.Unparticipate(ctx, c.Param("postID"), util.MustGetUsername(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

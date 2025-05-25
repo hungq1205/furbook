@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, PawPrint, MessageCircle, Settings, LogOut } from 'lucide-react';
+import { Home, User, PawPrint, MessageCircle, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {

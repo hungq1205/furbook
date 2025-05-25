@@ -45,7 +45,7 @@ func (r *Repository) GetFriendUsernames(username string) ([]string, error) {
 func (r *Repository) GetFriendRequests(username string) ([]*entity.User, error) {
 	var reqUsers []*entity.User
 	err := r.db.
-		Table("friend_request fr").
+		Table("friend_requests fr").
 		Select("u.*").
 		Joins("JOIN user u ON fr.sender = u.username").
 		Where("fr.receiver = ?", username).
@@ -58,7 +58,7 @@ func (r *Repository) GetFriendRequests(username string) ([]*entity.User, error) 
 
 func (r *Repository) CountFriendRequests(username string) (int64, error) {
 	var count int64
-	if err := r.db.Table("friend_request").
+	if err := r.db.Table("friend_requests").
 		Where("receiver = ?", username).
 		Count(&count).Error; err != nil {
 		return 0, err
@@ -88,7 +88,7 @@ func (r *Repository) CheckFriendship(userA string, userB string) (bool, error) {
 
 func (r *Repository) CheckFriendRequest(senderName string, receiverName string) (bool, error) {
 	var count int64
-	if err := r.db.Table("friend_request").
+	if err := r.db.Table("friend_requests").
 		Where("sender = ? AND receiver = ?", senderName, receiverName).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -113,14 +113,14 @@ func (r *Repository) DeleteFriend(username string, friendName string) error {
 }
 
 func (r *Repository) SendFriendRequest(senderName string, receiverName string) error {
-	if err := r.db.Exec("INSERT INTO friend_request (sender, receiver) VALUES (?, ?)", senderName, receiverName).Error; err != nil {
+	if err := r.db.Exec("INSERT INTO friend_requests (sender, receiver, created_at) VALUES (?, ?, NOW())", senderName, receiverName).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *Repository) DeleteFriendRequest(senderName string, receiverName string) error {
-	if err := r.db.Exec("DELETE FROM friend_request WHERE sender = ? AND receiver = ?", senderName, receiverName).Error; err != nil {
+	if err := r.db.Exec("DELETE FROM friend_requests WHERE sender = ? AND receiver = ?", senderName, receiverName).Error; err != nil {
 		return err
 	}
 	return nil

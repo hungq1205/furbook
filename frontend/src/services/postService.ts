@@ -46,7 +46,7 @@ export const postService = {
   },
 
   async getByUsername(username: string): Promise<Post[]> {
-    const response = await fetch(`${POST_URL}/ofuser/${username}`, {
+    const response = await fetch(`${POST_URL}/ofUser/${username}`, {
       headers: defaultAuthHeaders()
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());
@@ -107,17 +107,16 @@ export const postService = {
       headers: defaultAuthHeaders()
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());
-    return response.json();
+    return (await response.json()).comments;
   },
 
-  async addComment(postId: string, content: string): Promise<Comment> {
+  async addComment(postId: string, content: string): Promise<void> {
     const response = await fetch(`${POST_URL}/${postId}/comments`, {
       method: 'POST',
       headers: defaultAuthHeaders(),
       body: JSON.stringify({ content })
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());
-    return response.json();
   },
 
   async upsertInteraction(postId: string): Promise<void> {
@@ -135,5 +134,21 @@ export const postService = {
       headers: defaultAuthHeaders()
     });
     if (!response.ok) throw new HttpError(response.status, await response.json());
-  }
+  },
+
+  async participate(postId: string): Promise<void> {
+    const response = await fetch(`${POST_URL}/${postId}/participation`, {
+      method: 'POST',
+      headers: defaultAuthHeaders()
+    });
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+  },
+
+  async unparticipate(postId: string): Promise<void> {
+    const response = await fetch(`${POST_URL}/${postId}/participation`, {
+      method: 'DELETE',
+      headers: defaultAuthHeaders()
+    });
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+  },
 };

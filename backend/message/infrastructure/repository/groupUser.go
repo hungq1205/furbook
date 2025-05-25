@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"message/entity"
 	"message/util"
 
@@ -56,22 +57,25 @@ func (r *GroupUserRepository) GetGroupsOfUser(username string, pagination util.P
 }
 
 func (r *GroupUserRepository) GetDirectGroup(userA string, userB string) (*entity.Group, error) {
-	var group entity.Group
+	fmt.Println(userA + " " + userB)
+	group := entity.Group{
+		IsDirect: true,
+	}
+
 	err := r.db.
 		Model(&entity.Group{}).
 		Joins("join group_users gu1 on gu1.group_id = groups.id").
 		Joins("join group_users gu2 on gu2.group_id = groups.id").
-		Where("g.is_direct = ? AND gu1.username = ? AND gu2.username = ?", true, userA, userB).
+		Where("groups.is_direct = true AND gu1.username = ? AND gu2.username = ?", userA, userB).
 		Take(&group).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		if r.db.Create(&group).Error != nil ||
-			r.AddUserToGroup(group.ID, userB) != nil ||
+			r.AddUserToGroup(group.ID, userA) != nil ||
 			r.AddUserToGroup(group.ID, userB) != nil {
 			return nil, err
 		}
 	} else if err != nil {
-
 		return nil, err
 	}
 

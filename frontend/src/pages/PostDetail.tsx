@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, MessageCircle, Share2, Users, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../components/common/Button';
 import Avatar from '../components/common/Avatar';
@@ -10,16 +10,83 @@ import MediaGallery from '../components/feed/MediaGallery';
 import { formatDistanceToNow } from '../utils/dateUtils';
 import { handleError } from '../utils/errors';
 import { postService } from '../services/postService';
-import { Post } from '../types/post';
+import { Post, Comment } from '../types/post';
+import { useAuth } from '../services/authService';
 
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const authService = useAuth();
+
   const [post, setPost] = React.useState<Post | null>(null);
+  const [comments, setComments] = React.useState<Comment[]>([]); 
+  const [comment, setComment] = React.useState<string>('');
+
+  const [userInteracted, setUserInteracted] = React.useState<Boolean>(false);
+  const [interactionCount, setInteractionCount] = React.useState<number>(0);
+
+  const [userHelped, setUserHelped] = React.useState<Boolean>(false);
+  const [participantCount, setParticipantCount] = React.useState<number>(0);
+
+  const authUsername = authService.currentUser!.username;
+
+  const fetchComments = () => {
+    if (!id) return;
+    postService.getComments(id!)
+      .then(comments => setComments(comments.reverse()))
+      .catch(error => handleError(error, 'Failed to fetch comments', authService.logout));
+  };
+
+  const handleInteract = () => {
+    if (!id) return;
+    if (userInteracted)
+      postService.deleteInteraction(id)
+        .then(() => userInteracted && setUserInteracted(false))
+        .catch(error => handleError(error, 'Failed to unlike post', authService.logout));
+    else
+      postService.upsertInteraction(id)
+        .then(() => !userInteracted && setUserInteracted(true))
+        .catch(error => handleError(error, 'Failed to like post', authService.logout));
+    setUserInteracted(!userInteracted);
+  };
+
+  const handleParticipate = () => {
+    if (!id) return;
+    if (post?.type === 'blog') return;
+    if (userHelped)
+      postService.unparticipate(id)
+        .then(() => userHelped && setUserHelped(false))
+        .catch(error => handleError(error, 'Failed to remove participation', authService.logout));
+    else
+      postService.participate(id)
+        .then(() => !userHelped && setUserHelped(true))
+        .catch(error => handleError(error, 'Failed to participate in post', authService.logout));
+    setUserHelped(!userHelped);
+  };
+
+  const handleComment = () => {
+    if (!id || !comment.trim()) return;
+    postService.addComment(id, comment.trim())
+      .then(() => fetchComments())
+      .catch(error => handleError(error, 'Failed to post comment', authService.logout));
+    setComment('');
+  };
 
   useEffect(() => {
     postService.getById(id!)
-      .then(setPost)
-      .catch(error => handleError(error, 'Failed to fetch post'));
+      .then(post => {
+        const isUserInteracted = post.interactions.some(interaction => interaction.username === authUsername);
+        setPost(post);
+        setUserInteracted(isUserInteracted);
+        setInteractionCount(isUserInteracted ? post.interactions.length - 1 : post.interactions.length);
+
+        if (post.type !== 'blog' && post.participants) {
+          const isUserHelping = post.participants.some(participant => participant === authUsername);
+          setUserHelped(isUserHelping);
+          setParticipantCount(isUserHelping ? post.participants.length - 1 : post.participants.length);
+        }
+      })
+      .catch(error => handleError(error, 'Failed to fetch post', authService.logout));
+    fetchComments();
   }, [id]);
 
   if (!post) {
@@ -34,9 +101,6 @@ const PostDetail: React.FC = () => {
       </div>
     );
   }
-
-  const likeCount = post.interactions.filter(i => i.type === 'like').length;
-  const shareCount = post.interactions.filter(i => i.type === 'share').length;
 
   return (
     <motion.div
@@ -65,7 +129,7 @@ const PostDetail: React.FC = () => {
             </div>
           </div>
           
-          {(post.type === 'lost' || post.type === 'found') && (
+          {post.type !== 'blog' && (
             <>
               <div className="mb-4 inline-block px-3 py-1 rounded-full text-sm font-medium bg-error-100 text-error-700">
                 {post.type === 'lost' ? 'Missing' : 'Found'}
@@ -75,7 +139,7 @@ const PostDetail: React.FC = () => {
           
           <p className="text-gray-800 text-lg mb-6">{post.content}</p>
           
-          {(post.type === 'lost' || post.type === 'found') && (
+          {post.type !== 'blog' && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
@@ -94,7 +158,7 @@ const PostDetail: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Helpers</h3>
                   <div className="flex items-center">
                     <Users size={18} className="text-primary-500 mr-2" />
-                    <p className="text-gray-800">{post.participants?.length || 0} people helping</p>
+                    <p className="text-gray-800">{userHelped ? participantCount + 1 : participantCount} people helping</p>
                   </div>
                 </div>
               </div>
@@ -108,36 +172,35 @@ const PostDetail: React.FC = () => {
           )}
           
           <div className="flex flex-wrap items-center justify-between border-t border-b border-gray-200 py-4 my-6">
-            {post.type === 'blog' ? (
-              <>
-                <div className="flex space-x-6 mb-2 md:mb-0">
-                  <button className="flex items-center text-gray-600 hover:text-primary-600 transition-colors">
-                    <Heart size={20} className="mr-2" />
-                    <span>{likeCount} Likes</span>
-                  </button>
-                  <button className="flex items-center text-gray-600 hover:text-primary-600 transition-colors">
-                    <MessageCircle size={20} className="mr-2" />
-                    <span>{post.commentNum} Comments</span>
-                  </button>
-                  <button className="flex items-center text-gray-600 hover:text-primary-600 transition-colors">
-                    <Share2 size={20} className="mr-2" />
-                    <span>{shareCount} Shares</span>
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
+            <div className="flex space-x-6 mb-2 md:mb-0">
+              <button className="flex items-center text-gray-600 hover:text-red-500" 
+                onClick={handleInteract}
+              >
+                { userInteracted ? 
+                  <Heart fill="red" size={20} className="mr-2 text-red-500" /> :
+                  <Heart size={20} className="mr-2" /> 
+                }
+                <span>{userInteracted ? interactionCount + 1 : interactionCount} Likes</span>
+              </button>
+              <div className="flex items-center text-gray-600 cursor-default">
+                <MessageCircle size={20} className="mr-2" />
+                <span>{comments.length} Comments</span>
+              </div>
+            </div>
+            {post.type !== 'blog' && (
+              <div className="flex space-x-3">
                 <Button
                   variant={post.isResolved ? 'ghost' : 'secondary'}
                   icon={<Users size={18} />}
                   disabled={post.isResolved}
+                  onClick={handleParticipate}
                 >
-                  {post.isResolved ? 'Pet Found' : 'Help Find'}
+                  {post.isResolved ? 'Resolved' : userHelped ? 'Helping' : 'Help Find'}
                 </Button>
-                <Button variant="outline" icon={<Share2 size={18} />}>
-                  Share
+                <Button variant="outline" ring={false} icon={<Copy size={18} />}>
+                  Copy Link
                 </Button>
-              </>
+              </div>
             )}
           </div>
           
@@ -150,42 +213,40 @@ const PostDetail: React.FC = () => {
                   placeholder="Write a comment..."
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                   rows={2}
+                  onChange={e => setComment(e.target.value)}
+                  value={comment}
                 ></textarea>
                 <div className="flex justify-end mt-2">
-                  <Button variant="primary" size="sm">Post Comment</Button>
+                  <Button variant="primary" size="sm" onClick={handleComment}>Post Comment</Button>
                 </div>
               </div>
             </div>
             
-            {post.commentNum > 0 ? (
-              <div className="space-y-4">
-                <div className="flex space-x-3">
-                  <Link to={`/profile/${post.username}`}>
-                    <Avatar 
-                      src={post.userAvatar} 
-                      alt={post.displayName} 
-                      size="md" 
-                    />
-                  </Link>
-                  <div>
-                    <div className="bg-gray-100 p-3 rounded-lg justify-items-start">
-                      <Link to={`/profile/${post.username}`} className="mb-1 hover:underline">
-                        <div className="font-medium text-gray-900">{post.displayName}</div>
-                      </Link>
-                      <p className="text-gray-800">
-                        {post.type === 'lost' || post.type === 'found'
-                          ? "I think I saw this pet around Maple Street yesterday! I'll keep an eye out and let you know if I see them again."
-                          : "Your pet is adorable! What breed are they?"}
-                      </p>
-                    </div>
-                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                      <button className="mr-3 hover:text-primary-600">Like</button>
-                      <button className="mr-3 hover:text-primary-600">Reply</button>
-                      <span>2 hours ago</span>
+            {comments.length > 0 ? (
+                <div className="space-y-4">
+                {comments.map((comment, index) => (
+                  <div key={index} className="flex space-x-3">
+                    <Link to={`/profile/${comment.username}`}>
+                      <Avatar 
+                        src={comment.avatar} 
+                        alt={comment.displayName} 
+                        size="md" 
+                      />
+                    </Link>
+                    <div>
+                      <div className="bg-gray-100 p-3 rounded-lg justify-items-start">
+                        <Link to={`/profile/${comment.username}`} className="mb-1 hover:underline">
+                          <div className="font-medium text-gray-900">{comment.displayName}</div>
+                        </Link>
+                        <p className="text-gray-800">{comment.content}</p>
+                      </div>
+                      <div className="flex items-center mt-1 text-xs text-gray-500 ml-2">
+                        <span>{formatDistanceToNow(new Date(comment.createdAt))}</span>
+                      </div>
                     </div>
                   </div>
+                ))}
                 </div>
-              </div>
             ) : (
               <div className="text-center py-4 text-gray-500">
                 No comments yet. Be the first to comment!

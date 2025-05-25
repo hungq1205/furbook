@@ -102,3 +102,13 @@ func (s *Service) UpsertInteraction(ctx context.Context, postId, username string
 func (s *Service) DeleteInteraction(ctx context.Context, postId, username string) error {
 	return s.postRepo.DeleteInteraction(ctx, postId, username)
 }
+
+// Participation
+
+func (s *Service) Participate(ctx context.Context, postId, username string) error {
+	return s.postRepo.Participate(ctx, postId, username)
+}
+
+func (s *Service) Unparticipate(ctx context.Context, postId, username string) error {
+	return s.postRepo.Unparticipate(ctx, postId, username)
+}

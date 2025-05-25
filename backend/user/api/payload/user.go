@@ -1,5 +1,14 @@
 package payload
 
+type FriendshipType string
+
+const (
+	None     FriendshipType = "none"
+	Friend   FriendshipType = "friend"
+	Sent     FriendshipType = "sent"
+	Received FriendshipType = "received"
+)
+
 type UserCreateRequest struct {
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
@@ -14,6 +23,10 @@ type UserUpdateRequest struct {
 
 type UserListRequest struct {
 	Usernames []string `json:"usernames"`
+}
+
+type FriendshipResponse struct {
+	Friendship FriendshipType `json:"friendship"`
 }
 
 type CheckFriendRequest struct {

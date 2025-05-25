@@ -22,6 +22,10 @@ func MakeHandler(app *gin.Engine, groupService group.UseCase, messageService mes
 			getMembersOfGroup(ctx, groupService, userClient)
 		})
 
+		authGroup.GET("/direct/:username", func(ctx *gin.Context) {
+			getDirectGroup(ctx, groupService, messageService, userClient)
+		})
+
 		authGroup.GET("", func(ctx *gin.Context) {
 			getGroupsOfUser(ctx, groupService, messageService, userClient)
 		})

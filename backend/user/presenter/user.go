@@ -6,6 +6,7 @@ type User struct {
 	Avatar      string `json:"avatar"`
 	Bio         string `json:"bio"`
 	FriendNum   int    `json:"friendNum"`
+	GroupId     *int   `json:"groupid"`
 }
 
 type FriendList struct {
