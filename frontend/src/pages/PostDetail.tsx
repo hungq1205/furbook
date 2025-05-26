@@ -108,10 +108,10 @@ const PostDetail: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Link to="/" className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-4">
+      <div className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-4 cursor-pointer" onClick={() => window.history.back()}>
         <ChevronLeft size={20} className="mr-1" />
-        <span>Back to Feed</span>
-      </Link>
+        <span>Back</span>
+      </div>
       
       <Card>
         <div className="p-6">
@@ -131,7 +131,12 @@ const PostDetail: React.FC = () => {
           
           {post.type !== 'blog' && (
             <>
-              <div className="mb-4 inline-block px-3 py-1 rounded-full text-sm font-medium bg-error-100 text-error-700">
+              { post.isResolved && <div className="mb-4 inline-block px-3 py-1 mr-2 rounded-full text-sm font-medium bg-success-100 text-success-700">
+                Resolved
+              </div> }
+              <div className={`mb-4 inline-block px-3 py-1 rounded-full text-sm font-medium 
+                ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}
+              >
                 {post.type === 'lost' ? 'Missing' : 'Found'}
               </div>
             </>
@@ -195,7 +200,7 @@ const PostDetail: React.FC = () => {
                   disabled={post.isResolved}
                   onClick={handleParticipate}
                 >
-                  {post.isResolved ? 'Resolved' : userHelped ? 'Helping' : 'Help Find'}
+                  {post.isResolved && userHelped ? 'Helped' : userHelped ? 'Helping' : 'Help Find'}
                 </Button>
                 <Button variant="outline" ring={false} icon={<Copy size={18} />}>
                   Copy Link

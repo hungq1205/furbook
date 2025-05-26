@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
@@ -81,12 +81,27 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     setUserInteracted(!userInteracted);
   };
 
+  const LostPostTags: React.FC = () => (
+    post.type !== 'blog' && (
+      <div className='mr-3'>
+        <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
+          ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}
+        >
+          {post.type === 'lost' ? 'Missing' : 'Found'}
+        </div>
+          { post.isResolved && <div className="inline-block px-3 py-1 ml-2 rounded-full text-sm font-medium bg-success-100 text-success-700">
+            Resolved
+          </div> }
+      </div>
+    )
+  );
+
   return (
     <>
       <Card className="mb-4">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 w-full">
               <Link to={`/profile/${post.username}`}>
                 <Avatar src={post.userAvatar} alt={post.displayName} size="md" />
               </Link>
@@ -98,6 +113,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                   {formatDistanceToNow(new Date(post.createdAt))}
                 </p>
               </div>
+              <div className='grow'/>
+              { post.type !== 'blog' && (<div className='flex'><LostPostTags /></div>) }
             </div>
             {isOwnPost && (
               <div className="relative">
@@ -127,7 +144,26 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </div>
             )}
           </div>
-          
+
+          {post.type !== 'blog' && (
+            <div className="cursor-pointer pb-6 pt-3" onClick={handleContentClick}>
+              <div className="grid grid-cols-3">
+                <div className='justify-items-center'>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Last Seen Location</h3>
+                  <p className="text-gray-800">{post.lastSeen?.address}</p>
+                </div>
+                <div className='justify-items-center'>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Area</h3>
+                  <p className="text-gray-800">{post.area?.address}</p>
+                </div>
+                <div className='justify-items-center'>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Contact Information</h3>
+                  <p className="text-gray-800">{post.contactInfo}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="cursor-pointer">
             <p onClick={handleContentClick} className="text-gray-800 mb-3">{post.content}</p>
             
@@ -137,7 +173,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
           
           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 w-full">
               <button className="flex items-center text-sm text-gray-600 hover:text-primary-600 transition-colors" 
                 onClick={handleInteract}
               >
@@ -154,6 +190,15 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 <MessageCircle size={18} className="mr-1" />
                 <span>{post.commentNum}</span>
               </button>
+              <div className="grow"/>
+              { post.type !== 'blog' && 
+              <button 
+                className="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                onClick={handleContentClick}
+              >
+                <span className='mr-2'>{post.participants?.length ?? 'no '} helpers</span>
+                <Users size={18} className="mr-2" />
+              </button> }
             </div>
           </div>
         </div>

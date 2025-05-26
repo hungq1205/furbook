@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { UIEventHandler, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Minus, Maximize2 } from 'lucide-react';
 import Avatar from '../common/Avatar';
@@ -25,9 +25,10 @@ const ChatTab: React.FC<ChatTabProps> = ({ groupId, username, displayName, avata
   const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
   const isOutOfMessages = useRef(false);
-  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isFetchingMessages = useRef(false);
 
-  function sendMessage(groupId: number, content: string) {
+  const sendMessage = (groupId: number, content: string) => {
     if (!content.trim()) return;
     messageService.sendGroupMessage(groupId, content).then(newMessage => {
       setMessages(prevMessages => [...prevMessages, newMessage]);
@@ -38,10 +39,18 @@ const ChatTab: React.FC<ChatTabProps> = ({ groupId, username, displayName, avata
     });
   }
 
+  const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget as HTMLDivElement;
+    if (target.scrollTop === 0 && !isFetchingMessages.current && !isOutOfMessages.current) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  }
+
   useEffect(() => {
     if (isOutOfMessages.current) return;
-    messageService.getGroupMessages(groupId, page, 2).then(fetchedMessages => {
+    messageService.getGroupMessages(groupId, page, 4).then(fetchedMessages => {
       isOutOfMessages.current = fetchedMessages.length == 0;
+      isFetchingMessages.current = true;
       setMessages(prevMessages => {
         if (fetchedMessages[0]?.id !== prevMessages[0]?.id)
           return [...fetchedMessages, ...prevMessages]
@@ -50,7 +59,7 @@ const ChatTab: React.FC<ChatTabProps> = ({ groupId, username, displayName, avata
       });
     }).catch(error => {
       console.error('Error fetching messages:', error);
-    });
+    }).finally(() => isFetchingMessages.current = false);
   }, [page]);
 
   useEffect(() => {
@@ -105,12 +114,7 @@ const ChatTab: React.FC<ChatTabProps> = ({ groupId, username, displayName, avata
             <div
               ref={chatContainerRef}
               className="h-64 p-3 overflow-y-auto bg-gray-50"
-              onScroll={(e) => {
-                const target = e.target as HTMLDivElement;
-                if (target.scrollTop === 0 && !isOutOfMessages.current) {
-                  setPage((prevPage) => prevPage + 1);
-                }
-              }}
+              onScroll={handleChatScroll}
             >
             {messages.length > 0 ? (
               messages.map((message, index) => (

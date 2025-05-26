@@ -12,12 +12,9 @@ interface LostPetCardProps {
 }
 
 const LostPetCard: React.FC<LostPetCardProps> = ({ post }) => {
-  const statusClasses = post.type === 'lost'
-    ? 'bg-error-100 text-error-700'
-    : 'bg-success-100 text-success-700';
-
+  const baseTagClassName = 'px-2 py-1 rounded-full text-xs font-medium ring-2 ring-white'
   return (
-    <Card interactive className="h-full">
+    <Card interactive className="h-full" bg={`${!post.isResolved ? 'bg-white-100' : 'bg-teal-50'}`}>
       <div className="relative">
         {post.medias?.length > 0 && (
           <img 
@@ -26,8 +23,13 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post }) => {
             className="w-full h-48 object-cover"
           />
         )}
-        <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${statusClasses}`}>
-          {post.type === 'lost' ? 'Missing' : 'Found'}
+        <div className='absolute top-3 right-3 flex flex-row space-x-2'>
+          <div className={`${baseTagClassName} ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}>
+            {post.type === 'lost' ? 'Missing' : 'Found'}
+          </div>
+          { post.isResolved && 
+            <div className={`${baseTagClassName} bg-success-100 text-success-700`}>Resolved</div> 
+          }
         </div>
       </div>
       

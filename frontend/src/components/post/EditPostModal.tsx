@@ -20,9 +20,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose, onSave }) 
       const filesArray = Array.from(e.target.files);
       setNewMedia([...newMedia, ...filesArray]);
 
-      // Create preview URLs for new files
       const newMediaPreviews: Media[] = filesArray.map(file => ({
-        id: Math.random().toString(),
         type: file.type.startsWith('image/') ? 'image' : 'video',
         url: URL.createObjectURL(file)
       }));
@@ -34,7 +32,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose, onSave }) 
   const removeMedia = (index: number) => {
     setMedias(medias.filter((_, i) => i !== index));
     if (index >= post.medias.length) {
-      // Remove from new media if it's a newly added file
       const newMediaIndex = index - post.medias.length;
       setNewMedia(newMedia.filter((_, i) => i !== newMediaIndex));
     }
@@ -103,7 +100,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose, onSave }) 
           {medias.length > 0 && (
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
               {medias.map((item, index) => (
-                <div key={item.id} className="relative aspect-square">
+                <div key={item.url} className="relative aspect-square">
                   {item.type === 'image' ? (
                     <img
                       src={item.url}

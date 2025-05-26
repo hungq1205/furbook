@@ -201,7 +201,7 @@ const Profile: React.FC = () => {
             {posts.length > 0 ? (
               posts.map(post => (
                 <motion.div
-                  key={post.username}
+                  key={post.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
@@ -220,7 +220,7 @@ const Profile: React.FC = () => {
             {lostPosts.current.length > 0 ? (
               lostPosts.current.map(post => (
                 <motion.div
-                  key={post.username}
+                  key={post.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
@@ -239,7 +239,7 @@ const Profile: React.FC = () => {
             {posts.length > 0 ? (
               posts.map(post => (
                 <motion.div
-                  key={post.username}
+                  key={post.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}

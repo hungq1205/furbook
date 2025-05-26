@@ -1,31 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Send } from 'lucide-react';
 import Avatar from '../components/common/Avatar';
 import Card from '../components/common/Card';
-// import { friends, messages, groupChats } from '../data/mockData';
+// import { friends, messages, groupChats, currentUser } from '../data/mockData';
 import { formatDistanceToNow } from '../utils/dateUtils';
 import { groupChatService } from '../services/groupChatService';
 import { GroupChat, Message } from '../types/message';
 import { handleError } from '../utils/errors';
 import { messageService } from '../services/messageService';
 import { useAuth } from '../services/authService';
-
-const selectGroupChat = async (
-  selectedGroupId: number, 
-  setSelectedGroup: (group: GroupChat | null) => void,
-  setMessages: (messages: Message[]) => void,
-  logout: () => void
-) => {
-  try {
-    const group = await groupChatService.getGroupDetails(selectedGroupId)
-    const messages = await messageService.getGroupMessages(selectedGroupId, 1, 10);
-    setSelectedGroup(group);
-    setMessages(messages);
-  } catch (error) {
-    handleError(error, 'Failed to fetch group chat details', logout);
-  }
-}
+import { User } from '../types/user';
+import { userService } from '../services/userService';
 
 const Messages: React.FC = () => {
   const authService = useAuth();
@@ -34,8 +20,62 @@ const Messages: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<GroupChat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
+  const [page, setPage] = useState(0);
+  const [userDict, setUserDict] = useState<Map<string, User>>(new Map());
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isOutOfMessages = useRef(false);
+  const isFetchingMessages = useRef(false);
 
-  const friends = authService.currentUserFriends!;
+  const currentUser = authService.currentUser!;
+
+const updateUserDict = (...usernames: string[]) => {
+  const missed = usernames.filter(username => !userDict.has(username));
+  missed.length !== 0 && userService.getUsers(missed)
+    .then(users => {
+      const newDict = new Map(userDict);
+      users.forEach(user => newDict.set(user.username, user));
+      setUserDict(newDict);
+    })
+    .catch(err => handleError(err, 'Failed to fetch member details', authService.logout));
+};
+
+  const handleSelectChat = async (groupId: number) => {
+    try {
+      if (selectedGroup?.id !== groupId) {
+        setMessages([]);
+        const group = await groupChatService.getGroupDetails(groupId)
+        isFetchingMessages.current = false;
+        isOutOfMessages.current = false;
+
+        if (!group.is_direct) updateUserDict(...group.members);
+        setSelectedGroup(group);
+        setPage(1);
+      }
+    } catch (error) {
+      handleError(error, 'Failed to fetch group chat details', authService.logout);
+    }
+  };
+
+  useEffect(() => {
+    if (isOutOfMessages.current || !selectedGroup || page === 0) return;
+    const fetchingChat = selectedGroup.id;
+    messageService.getGroupMessages(selectedGroup.id, page, 4)
+      .then(fetchedMessages => {
+        if (selectedGroup?.id !== fetchingChat) return;
+
+        isOutOfMessages.current = fetchedMessages.length === 0;
+        isFetchingMessages.current = true;
+
+        setMessages(prevMessages => {
+          if (fetchedMessages[0]?.id !== prevMessages[0]?.id)
+            return [...fetchedMessages, ...prevMessages]
+          else
+            return fetchedMessages;
+        });
+      })
+      .catch(error => console.error('Error fetching messages:', error))
+      .finally(() => isFetchingMessages.current = false);
+  }, [selectedGroup?.id, page]);
 
   const handleSendMessage = async () => {
     if (!selectedGroup || !message.trim()) return;
@@ -48,11 +88,57 @@ const Messages: React.FC = () => {
     }
   };
 
+  const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget as HTMLDivElement;
+    if (target.scrollTop === 0 && !isFetchingMessages.current && !isOutOfMessages.current)
+      setPage((prevPage) => prevPage + 1);
+  }
+
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (page === 1 && chatContainer)
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, [messages]);
+
   useEffect(() => {
     groupChatService.getGroups()
       .then(setGroupChats)
       .catch(error => handleError(error, 'Failed to fetch group chats', authService.logout));
   }, [])
+
+  const MessageItem = ({ msg }: { msg: Message }) => (
+    <div key={msg.id} className="mb-4">
+      <div className="flex items-start">
+        <Avatar
+          src={userDict.get(msg.username)?.avatar ?? ''}
+          alt={userDict.get(msg.username)?.displayName ?? ''}
+          size="sm"
+        />
+        <div className="ml-2 max-w-[80%]">
+          <div className="flex items-center">
+            <span className="font-medium text-sm">{userDict.get(msg.username)?.displayName ?? ''}</span>
+            <span className="text-xs text-gray-500 ml-2">
+              {formatDistanceToNow(new Date(msg.created_at))}
+            </span>
+          </div>
+          <p className="text-gray-800 mt-1">{msg.content}</p>
+        </div>
+      </div>
+    </div>
+  )
+
+  const UserMessageItem = ({ msg }: { msg: Message }) => (
+    <div key={msg.id} className="mb-4">
+      <div className="flex items-start flex-row-reverse">
+        <div className="mr-2 max-w-[80%] flex flex-col">
+          <div className="flex items-center flex-row-reverse text-xs text-gray-500 mr-4">
+              {formatDistanceToNow(new Date(msg.created_at))}
+          </div>
+          <p className="text-gray-800 mt-1 self-end">{msg.content}</p>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <motion.div
@@ -62,7 +148,7 @@ const Messages: React.FC = () => {
       className="h-[calc(100vh-theme(spacing.16))] md:h-[calc(100vh-theme(spacing.12))] flex flex-col"
     >
       <Card className="flex-1 overflow-hidden">
-        <div className="h-full flex">
+        <div className="h-full flex" onScroll={handleChatScroll}>
           <div className={`${selectedGroup ? 'hidden md:block' : 'w-full'} md:w-80 border-r border-gray-200`}>
             <div className="h-full flex flex-col">
               <div className="overflow-y-auto flex-1">
@@ -74,11 +160,11 @@ const Messages: React.FC = () => {
                   />
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 </div>
-                {groupChats.map(group  => {
+                {groupChats.map(group => {
                   return (
                     <button
                       key={group.id}
-                      onClick={() => selectGroupChat(group.id, setSelectedGroup, setMessages, authService.logout)}
+                      onClick={() => handleSelectChat(group.id)}
                       className={`w-full flex items-center p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 ${
                         selectedGroup?.id === group.id ? 'bg-primary-50' : ''
                       }`}
@@ -90,7 +176,7 @@ const Messages: React.FC = () => {
                           size="md"
                         />
                       )}
-                      <div className="ml-3 flex-1 text-left">
+                      <div className="ml-3 flex-1 text-left overflow-hidden">
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-gray-900">
                             {group.name}
@@ -135,29 +221,12 @@ const Messages: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef}>
                   {messages.length > 0 ? (
                     messages.map((msg) => {
-                      const sender = msg.username == authService.currentUser!.username ? authService.currentUser : friends.find(f => f.username === msg.username);
-                      return (
-                        <div key={msg.id} className="mb-4">
-                          <div className="flex items-start">
-                            <Avatar
-                              src={sender?.avatar || ''}
-                              alt={sender?.displayName || ''}
-                              size="sm"
-                            />
-                            <div className="ml-2 max-w-[82%]">
-                              <div className="flex items-center">
-                                <span className="font-medium text-sm">{sender?.displayName}</span>
-                                <span className="text-xs text-gray-500 ml-2">
-                                  {formatDistanceToNow(new Date(msg.created_at))}
-                                </span>
-                              </div>
-                              <p className="text-gray-800 mt-1">{msg.content}</p>
-                            </div>
-                          </div>
-                        </div>
+                      return ( msg.username === currentUser.username ?
+                        <UserMessageItem key={msg.id} msg={msg} /> :
+                        <MessageItem key={msg.id} msg={msg} />
                       );
                     })
                   ) : (

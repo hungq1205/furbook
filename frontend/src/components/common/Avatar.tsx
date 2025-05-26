@@ -22,7 +22,7 @@ const Avatar: React.FC<AvatarProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className={`${sizeClasses[size]} relative`}>
       <motion.img 
         src={src} 
         alt={alt}
