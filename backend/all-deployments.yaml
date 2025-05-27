@@ -1,0 +1,375 @@
+# Aggregate Kubernetes resources for all services
+---
+# Auth DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: authdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authdb
+spec:
+  selector:
+    matchLabels:
+      app: authdb
+  template:
+    metadata:
+      labels:
+        app: authdb
+    spec:
+      containers:
+        - name: authdb
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+            - name: POSTGRES_DB
+              value: "auth"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: authdb-storage
+      volumes:
+        - name: authdb-storage
+          persistentVolumeClaim:
+            claimName: authdb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authdb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: authdb
+---
+# Gateway
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: gateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MESSAGE_SERVICE_URL
+              value: "http://message:8080"
+            - name: POST_SERVICE_URL
+              value: "http://post:8080"
+            - name: USER_SERVICE_URL
+              value: "http://user:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30000
+      name: http
+  selector:
+    app: gateway
+---
+# Message DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: messagedb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messagedb
+spec:
+  selector:
+    matchLabels:
+      app: messagedb
+  template:
+    metadata:
+      labels:
+        app: messagedb
+    spec:
+      containers:
+        - name: messagedb
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+            - name: POSTGRES_DB
+              value: "message"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: messagedb-storage
+      volumes:
+        - name: messagedb-storage
+          persistentVolumeClaim:
+            claimName: messagedb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: messagedb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: messagedb
+---
+# Message
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message
+spec:
+  selector:
+    matchLabels:
+      app: message
+  template:
+    metadata:
+      labels:
+        app: message
+    spec:
+      containers:
+        - name: message
+          image: message:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: message
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: message
+---
+# Post DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postdb
+spec:
+  selector:
+    matchLabels:
+      app: postdb
+  template:
+    metadata:
+      labels:
+        app: postdb
+    spec:
+      containers:
+        - name: postdb
+          image: mongo
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "admin"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: "admin123"
+          volumeMounts:
+            - mountPath: /data/db
+              name: postdb-storage
+      volumes:
+        - name: postdb-storage
+          persistentVolumeClaim:
+            claimName: postdb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postdb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 27017
+      targetPort: 27017
+      name: mongo
+  selector:
+    app: postdb
+---
+# Post
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post
+spec:
+  selector:
+    matchLabels:
+      app: post
+  template:
+    metadata:
+      labels:
+        app: post
+    spec:
+      containers:
+        - name: post
+          image: post:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: post
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: post
+---
+# User DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: userdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userdb
+spec:
+  selector:
+    matchLabels:
+      app: userdb
+  template:
+    metadata:
+      labels:
+        app: userdb
+    spec:
+      containers:
+        - name: userdb
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+            - name: POSTGRES_DB
+              value: "user"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: userdb-storage
+      volumes:
+        - name: userdb-storage
+          persistentVolumeClaim:
+            claimName: userdb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userdb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: userdb
+---
+# User
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+spec:
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: user:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: user

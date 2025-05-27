@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messagedb
+spec:
+  selector:
+    matchLabels:
+      app: messagedb
+  template:
+    metadata:
+      labels:
+        app: messagedb
+    spec:
+      containers:
+        - name: messagedb
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+            - name: POSTGRES_DB
+              value: "message"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: messagedb-storage
+      volumes:
+        - name: messagedb-storage
+          persistentVolumeClaim:
+            claimName: messagedb-pvc
