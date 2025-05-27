@@ -12,6 +12,7 @@ import { messageService } from '../services/messageService';
 import { useAuth } from '../services/authService';
 import { User } from '../types/user';
 import { userService } from '../services/userService';
+import wsService, { ChatPayload } from '../services/webSocketService';
 
 const Messages: React.FC = () => {
   const authService = useAuth();
@@ -21,33 +22,37 @@ const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
   const [page, setPage] = useState(0);
+  const [firstLoad, setFirstLoad] = useState(true);
   const [userDict, setUserDict] = useState<Map<string, User>>(new Map());
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const isOutOfMessages = useRef(false);
   const isFetchingMessages = useRef(false);
+  const isBackReading = useRef(false);
 
   const currentUser = authService.currentUser!;
 
-const updateUserDict = (...usernames: string[]) => {
-  const missed = usernames.filter(username => !userDict.has(username));
-  missed.length !== 0 && userService.getUsers(missed)
-    .then(users => {
-      const newDict = new Map(userDict);
-      users.forEach(user => newDict.set(user.username, user));
-      setUserDict(newDict);
-    })
-    .catch(err => handleError(err, 'Failed to fetch member details', authService.logout));
-};
+  const updateUserDict = (...usernames: string[]) => {
+    const missed = usernames.filter(username => !userDict.has(username));
+    missed.length !== 0 && userService.getUsers(missed)
+      .then(users => {
+        const newDict = new Map(userDict);
+        users.forEach(user => newDict.set(user.username, user));
+        setUserDict(newDict);
+      })
+      .catch(err => handleError(err, 'Failed to fetch member details', authService.logout));
+  };
 
   const handleSelectChat = async (groupId: number) => {
     try {
       if (selectedGroup?.id !== groupId) {
-        setMessages([]);
         const group = await groupChatService.getGroupDetails(groupId)
         isFetchingMessages.current = false;
         isOutOfMessages.current = false;
+        isBackReading.current = false;
 
-        if (!group.is_direct) updateUserDict(...group.members);
+        setMessages([]);
+        setFirstLoad(true);
+        updateUserDict(...group.members);
         setSelectedGroup(group);
         setPage(1);
       }
@@ -59,23 +64,53 @@ const updateUserDict = (...usernames: string[]) => {
   useEffect(() => {
     if (isOutOfMessages.current || !selectedGroup || page === 0) return;
     const fetchingChat = selectedGroup.id;
+    isFetchingMessages.current = true;
     messageService.getGroupMessages(selectedGroup.id, page, 4)
       .then(fetchedMessages => {
-        if (selectedGroup?.id !== fetchingChat) return;
-
+        if (selectedGroup.id !== fetchingChat) return;
         isOutOfMessages.current = fetchedMessages.length === 0;
-        isFetchingMessages.current = true;
 
         setMessages(prevMessages => {
           if (fetchedMessages[0]?.id !== prevMessages[0]?.id)
             return [...fetchedMessages, ...prevMessages]
           else
-            return fetchedMessages;
+            return prevMessages;
         });
       })
       .catch(error => console.error('Error fetching messages:', error))
       .finally(() => isFetchingMessages.current = false);
   }, [selectedGroup?.id, page]);
+
+  useEffect(() => {
+    const callback = (payload: ChatPayload) => {
+      if (payload.groupId === selectedGroup?.id) {
+        setMessages(prevMessages => {
+          if (prevMessages.length > 0 && prevMessages[0].id === payload.messageId)
+            return prevMessages;
+          const newMessage = {
+            id: payload.messageId,
+            content: payload.content,
+            created_at: payload.createdAt,
+            username: payload.username,
+          } as Message;
+          return [...prevMessages, newMessage];
+        });
+      } 
+      const group = groupChats.find(g => g.id === payload.groupId);
+      if (group)
+        setGroupChats(prevGroups => prevGroups.map(g => 
+          g.id === group.id ? { ...g, last_message: { 
+            id: payload.messageId, 
+            content: payload.content, 
+            created_at: payload.createdAt, 
+            username: payload.username,
+            group_id: group.id
+          } } : g
+        ));
+    };
+    wsService.subscribe<ChatPayload>('chat', callback);
+    return () => wsService.unsubscribe('chat', callback);
+  }, [messages, selectedGroup?.id, groupChats]);
 
   const handleSendMessage = async () => {
     if (!selectedGroup || !message.trim()) return;
@@ -90,14 +125,25 @@ const updateUserDict = (...usernames: string[]) => {
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget as HTMLDivElement;
+    isBackReading.current = target.scrollTop < target.scrollHeight - target.clientHeight - 70;
     if (target.scrollTop === 0 && !isFetchingMessages.current && !isOutOfMessages.current)
       setPage((prevPage) => prevPage + 1);
   }
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
-    if (page === 1 && chatContainer)
+    if (!chatContainer) return;
+    if (messages.length === 0) return;
+    if (firstLoad) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
+      setFirstLoad(false);
+      return;
+    } 
+    if (
+      messages[messages.length - 1].username === currentUser.username ||
+      !isBackReading.current
+    )
+      chatContainer.scrollTop = chatContainer.scrollHeight - chatContainer.clientHeight;
   }, [messages]);
 
   useEffect(() => {
@@ -148,7 +194,7 @@ const updateUserDict = (...usernames: string[]) => {
       className="h-[calc(100vh-theme(spacing.16))] md:h-[calc(100vh-theme(spacing.12))] flex flex-col"
     >
       <Card className="flex-1 overflow-hidden">
-        <div className="h-full flex" onScroll={handleChatScroll}>
+        <div className="h-full flex">
           <div className={`${selectedGroup ? 'hidden md:block' : 'w-full'} md:w-80 border-r border-gray-200`}>
             <div className="h-full flex flex-col">
               <div className="overflow-y-auto flex-1">
@@ -221,7 +267,7 @@ const updateUserDict = (...usernames: string[]) => {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef}>
+                <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef} onScroll={handleChatScroll}>
                   {messages.length > 0 ? (
                     messages.map((msg) => {
                       return ( msg.username === currentUser.username ?

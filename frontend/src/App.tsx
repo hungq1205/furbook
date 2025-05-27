@@ -15,6 +15,7 @@ import Messages from './pages/Messages';
 import { AuthProvider, useAuth } from './services/authService';
 import Auth from './pages/Auth';
 import { useEffect, useState } from 'react';
+import wsService from './services/webSocketService';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -31,6 +32,12 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
         setAuthChecked(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (!authService.isAuthenticated) return;
+    wsService.connect(authService.token!);
+    return () => wsService.disconnect();
+  }, [authService.currentUser?.username]);
 
   if (!authChecked)
     return <div>Loading...</div>;

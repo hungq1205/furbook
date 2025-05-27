@@ -45,6 +45,7 @@ func groupEntityToPresenter(in *entity.Group, username string, groupService grou
 			Name:        directUser[0].DisplayName,
 			Avatar:      directUser[0].Avatar,
 			IsDirect:    in.IsDirect,
+			Members:     users,
 			LastMessage: lastMessage,
 		}, nil
 	} else {

@@ -24,6 +24,7 @@ interface SignupPayload {
 }
 
 interface AuthContextValue {
+  token: string | null;
   currentUser: User | null;
   currentUserFriends: User[];
   isAuthenticated: boolean;
@@ -98,6 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   return (
     <AuthContext.Provider value={{ 
+      token,
       currentUser, 
       currentUserFriends, 
       isAuthenticated, 

@@ -38,9 +38,10 @@ func makeHandler() *gin.Engine {
 	messageService := messageService.NewService(messageRepo, groupUserRepo)
 	groupService := groupService.NewService(groupRepo, groupUserRepo)
 
+	wsClient := client.NewWsClient("http://gateway:8080")
 	userClient := client.NewUserClient("http://user:8080")
 
-	message.MakeHandler(app, messageService, groupService)
+	message.MakeHandler(app, messageService, groupService, wsClient)
 	group.MakeHandler(app, groupService, messageService, userClient)
 
 	return app

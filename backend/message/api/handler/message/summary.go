@@ -1,6 +1,7 @@
 package message
 
 import (
+	"message/api/client"
 	payload "message/api/payload/message"
 	"message/usecase/group"
 	"message/usecase/message"
@@ -60,7 +61,7 @@ func getDirectMessageList(ctx *gin.Context, messageService message.UseCase) {
 	ctx.JSON(http.StatusOK, messageListEntityToPresenter(messages))
 }
 
-func createGroupMessage(ctx *gin.Context, messageService message.UseCase, groupService group.UseCase) {
+func createGroupMessage(ctx *gin.Context, messageService message.UseCase, groupService group.UseCase, wsClient client.WsClient) {
 	groupIdParam := ctx.Param("groupID")
 	groupID, err := strconv.Atoi(groupIdParam)
 	if err != nil {
@@ -81,20 +82,8 @@ func createGroupMessage(ctx *gin.Context, messageService message.UseCase, groupS
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, messageEntityToPresenter(msg))
-}
 
-func createDirectMessage(ctx *gin.Context, messageService message.UseCase) {
-	var body payload.CreateDirectMessagePayload
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	wsClient.SendMessage(msg.ID, ctx.MustGet("username").(string), groupID, body.Content, msg.CreatedAt)
 
-	msg, err := messageService.SendDirectMessage(ctx.MustGet("username").(string), body.OppUsername, body.Content)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 	ctx.JSON(http.StatusCreated, messageEntityToPresenter(msg))
 }
