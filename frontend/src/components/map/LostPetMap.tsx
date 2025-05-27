@@ -71,14 +71,14 @@ const LostPetMap: React.FC<LostPetMapProps> = ({ post, userLocation }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />
-        )}
         {post.lastSeen && (
           <Marker position={[post.lastSeen.lat, post.lastSeen.lng]} icon={lastSeenIcon} />
         )}
         {post.area && (
           <Marker position={[post.area.lat, post.area.lng]} icon={areaIcon} />
+        )}
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />
         )}
       </MapContainer>
     </div>

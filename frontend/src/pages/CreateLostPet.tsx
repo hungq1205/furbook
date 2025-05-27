@@ -7,8 +7,10 @@ import Card from '../components/common/Card';
 import { fileService } from '../services/fileService';
 import LocationPicker from '../components/map/LocationPicker';
 import { LostPostPayload, postService } from '../services/postService';
+import { useNavigate } from 'react-router-dom';
 
 const CreateLostPet: React.FC = () => {
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
   const [type, setType] = useState<'lost' | 'found'>('lost');
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -86,7 +88,8 @@ const CreateLostPet: React.FC = () => {
     } as LostPostPayload;
 
     try {
-      await postService.createLostPost(data);
+      const post = await postService.createLostPost(data);
+      navigate(`/post/${post.id}`)
     } catch (err) {
       console.error('Failed to post lost found post:', err);
     } finally {

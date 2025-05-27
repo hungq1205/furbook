@@ -15,6 +15,7 @@ const CreatePostInput: React.FC = () => {
   const [content, setContent] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [uploadMedias, setUploadMedias]  = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFocus = () => {
     setExpanded(true);
@@ -26,17 +27,20 @@ const CreatePostInput: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
     const medias: Media[] = await Promise.all(
       uploadMedias.map(async (file) => ({
         type: file.type.startsWith('image/') ? 'image' : 'video',
         url: await fileService.upload(file),
       } as Media))
     );
-    postService.createBlogPost({ content, medias } as BlogPostPayload);
+    await postService.createBlogPost({ content, medias } as BlogPostPayload);
 
     setContent('');
     setUploadMedias([]);
     setExpanded(false);
+    setIsLoading(false);
   };
 
   const handleImageUpload = () => {
@@ -73,6 +77,7 @@ const CreatePostInput: React.FC = () => {
             <textarea
               placeholder="Share what your pet is up to..."
               value={content}
+              disabled={isLoading}
               onChange={(e) => setContent(e.target.value)}
               onClick={handleFocus}
               className="w-full bg-transparent border-none resize-none focus:outline-none min-h-[15px]"
@@ -88,6 +93,7 @@ const CreatePostInput: React.FC = () => {
               >
                 <div className="flex space-x-2">
                   <button 
+                    disabled={isLoading}
                     className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm"
                     onClick={handleImageUpload}
                   >
@@ -95,6 +101,7 @@ const CreatePostInput: React.FC = () => {
                     <span>Photo</span>
                   </button>
                   <button 
+                    disabled={isLoading}
                     className="flex items-center text-gray-600 hover:text-primary-600 transition-colors text-sm"
                     onClick={handleVideoUpload}
                   >

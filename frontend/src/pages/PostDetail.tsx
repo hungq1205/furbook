@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy } from 'lucide-react';
+import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy, Ticket, Paperclip } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../components/common/Button';
 import Avatar from '../components/common/Avatar';
@@ -75,6 +75,16 @@ const PostDetail: React.FC = () => {
         .then(() => !userHelped && setUserHelped(true))
         .catch(error => handleError(error, 'Failed to participate in post', authService.logout));
     setUserHelped(!userHelped);
+  };
+
+  const handleResolve = () => {
+    if (!id) return;
+    if (post?.type === 'blog') return;
+    if (!window.confirm('Are you sure to mark this as resolved?')) return;
+    
+    postService.updateLostFoundStatus(id, true)
+      .then(() => setPost({ ...post, isResolved: true } as Post))
+      .catch(error => handleError(error, 'Failed to set lost found post status', authService.logout));
   };
 
   const handleComment = () => {
@@ -175,7 +185,7 @@ const PostDetail: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Helpers</h3>
                   <div className="flex items-center">
                     <Users size={18} className="text-primary-500 mr-2" />
-                    <p className="text-gray-800">{userHelped ? participantCount + 1 : participantCount} people helping</p>
+                    <p className="text-gray-800">{userHelped ? participantCount + 1 : participantCount} people {post.isResolved ? 'helped' : 'helping'}</p>
                   </div>
                 </div>
               </div>
@@ -206,7 +216,21 @@ const PostDetail: React.FC = () => {
                 <span>{comments.length} Comments</span>
               </div>
             </div>
-            {post.type !== 'blog' && (
+            {post.type !== 'blog' && post.username === authUsername ?
+              <div className="flex space-x-3">
+              <Button
+                variant={post.isResolved ? 'ghost' : 'success'}
+                icon={<Paperclip size={18} />}
+                disabled={post.isResolved}
+                onClick={handleResolve}
+              >
+                {post.isResolved ? 'Resolved' : 'Mark resolved'}
+              </Button>
+              <Button variant="outline" ring={false} icon={<Copy size={18} />}>
+                Copy Link
+              </Button>
+            </div>
+            :
               <div className="flex space-x-3">
                 <Button
                   variant={post.isResolved ? 'ghost' : 'secondary'}
@@ -219,8 +243,8 @@ const PostDetail: React.FC = () => {
                 <Button variant="outline" ring={false} icon={<Copy size={18} />}>
                   Copy Link
                 </Button>
-              </div>
-            )}
+              </div> 
+            }
           </div>
           
           <div>

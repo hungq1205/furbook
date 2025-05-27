@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'warning';
+export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'accent' | 'outline' | 'ghost' | 'warning';
 
 interface ButtonProps {
   children: React.ReactNode;
@@ -33,6 +33,7 @@ const Button: React.FC<ButtonProps> = ({
   const variantClasses = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
     secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500',
+    success: 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500',
     accent: 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-400',
     outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-primary-500',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',

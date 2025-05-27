@@ -33,7 +33,7 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
   }, [userLocation, post.lastSeen]);
 
   return (
-    <Card interactive className="h-full" bg={`${!post.isResolved ? 'bg-white-100' : 'bg-teal-50'}`}>
+    <Card interactive className="h-full flex flex-col" bg={`${!post.isResolved ? 'bg-white-100' : 'bg-teal-50'}`}>
       <div className="relative">
         {post.medias?.length > 0 && (
           <img 
@@ -55,12 +55,12 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">{post.content.split('\n')[0]}</h3>
+      <div className="p-4 flex flex-col grow">
+        <h3 className="text-lg font-medium text-gray-900 mb-2 grow">{post.content.split('\n')[0]}</h3>
         
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
           <MapPin size={16} />
-          <span>{post.area?.address}</span>
+          <span>{post.lastSeen?.address}</span>
         </div>
         
         <div className="flex items-center justify-between text-sm text-gray-500 mb-4">

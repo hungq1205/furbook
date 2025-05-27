@@ -48,10 +48,6 @@ const LostPetsMap: React.FC<LostPetsMapProps> = ({ posts, userLocation }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />
-        )}
-        
         {validPosts.map((post) => (
           <Marker
             key={post.id}
@@ -77,6 +73,9 @@ const LostPetsMap: React.FC<LostPetsMapProps> = ({ posts, userLocation }) => {
             </Popup>
           </Marker>
         ))}
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon} />
+        )}
       </MapContainer>
     </div>
   );

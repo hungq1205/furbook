@@ -54,3 +54,16 @@ func LocationEntityToPresenter(loc *entity.Location) *Location {
 		Lng:     loc.Location.Coordinates[0],
 	}
 }
+
+func LocationPresenterToEntity(loc *Location) *entity.Location {
+	if loc == nil {
+		return nil
+	}
+	return &entity.Location{
+		Address: loc.Address,
+		Location: entity.GeoPoint{
+			Type:        "Point",
+			Coordinates: []float64{loc.Lng, loc.Lat},
+		},
+	}
+}

@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"post/api/presenter"
 	"post/entity"
 	"time"
 )
@@ -19,10 +20,10 @@ type CreateLostPetPostPayload struct {
 	Content string          `json:"content"`
 	Medias  []entity.Media  `json:"medias"`
 
-	ContactInfo string          `json:"contactInfo"`
-	LostAt      *time.Time      `json:"lostAt"`
-	Area        entity.Location `json:"area"`
-	LastSeen    entity.Location `json:"lastSeen"`
+	ContactInfo string             `json:"contactInfo"`
+	LostAt      *time.Time         `json:"lostAt"`
+	Area        presenter.Location `json:"area"`
+	LastSeen    presenter.Location `json:"lastSeen"`
 }
 
 type PatchContentPayload struct {

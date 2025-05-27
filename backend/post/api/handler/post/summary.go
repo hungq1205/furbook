@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"post/api/client"
 	"post/api/payload"
+	"post/api/presenter"
 	"post/usecase/post"
 	"post/util"
 	"strconv"
@@ -128,7 +129,17 @@ func CreateLostPetPost(c *gin.Context, postService *post.Service, userClient cli
 	username := util.MustGetUsername(c)
 
 	ctx := c.Request.Context()
-	newPost, err := postService.CreateLostPetPost(ctx, username, body.ContactInfo, body.Type, body.Content, body.Medias, &body.Area, &body.LastSeen, body.LostAt)
+	newPost, err := postService.CreateLostPetPost(
+		ctx,
+		username,
+		body.ContactInfo,
+		body.Type,
+		body.Content,
+		body.Medias,
+		presenter.LocationPresenterToEntity(&body.Area),
+		presenter.LocationPresenterToEntity(&body.LastSeen),
+		body.LostAt,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
