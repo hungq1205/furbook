@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X, MapPin } from 'lucide-react';
-import { Media } from '../types/post';
+import { Location, Media } from '../types/post';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import { fileService } from '../services/fileService';
+import LocationPicker from '../components/map/LocationPicker';
+import { LostPostPayload, postService } from '../services/postService';
 
 const CreateLostPet: React.FC = () => {
-  const [status, setStatus] = useState<'lost' | 'found'>('lost');
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
+  const [type, setType] = useState<'lost' | 'found'>('lost');
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [showLocationPicker, setShowLocationPicker] = useState<'area' | 'lastSeen' | null>(null);
+  const [area, setArea] = useState<Location | null>(null);
+  const [lastSeen, setLastSeen] = useState<Location | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        }),
+        err => console.error('Error getting location:', err)
+      );
+  }, []);
+
+  const handleLocationSelect = (loc: Location) => {
+    if (showLocationPicker === 'area')
+      setArea(loc);
+    else
+      setLastSeen(loc);
+    setShowLocationPicker(null);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -41,21 +67,31 @@ const CreateLostPet: React.FC = () => {
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
 
-    const data = {
-      type: status,
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      lastSeen: formData.get('lastSeen') as string,
-      area: formData.get('area') as string,
-      contact: formData.get('contact') as string,
-      date: formData.get('date') as string,
-      files: toMedias(formData.getAll('medias') as File[]),
-    };
+    const rawLostAt = formData.get('lostAt') as string;
+    const lostAt = new Date(rawLostAt).toISOString();
 
-    console.log('Submitting:', data);
+    const data = {
+      type: type,
+      content: formData.get('description') as string,
+      lastSeen: lastSeen,
+      area: area,
+      contactInfo: formData.get('contact') as string,
+      lostAt: lostAt,
+      medias: await toMedias(formData.getAll('medias') as File[]),
+    } as LostPostPayload;
+
+    try {
+      await postService.createLostPost(data);
+    } catch (err) {
+      console.error('Failed to post lost found post:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -65,7 +101,7 @@ const CreateLostPet: React.FC = () => {
       transition={{ duration: 0.5 }}
     >
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        {status === 'lost' ? 'Report Lost Pet' : 'Report Found Pet'}
+        {type === 'lost' ? 'Report Lost Pet' : 'Report Found Pet'}
       </h1>
       
       <Card>
@@ -76,36 +112,26 @@ const CreateLostPet: React.FC = () => {
               <button
                 type="button"
                 className={`px-4 py-2 rounded-md border focus:outline-none ${
-                  status === 'lost'
+                  type === 'lost'
                     ? 'bg-error-50 border-error-200 text-error-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
-                onClick={() => setStatus('lost')}
+                onClick={() => setType('lost')}
               >
                 Lost Pet
               </button>
               <button
                 type="button"
                 className={`px-4 py-2 rounded-md border focus:outline-none ${
-                  status === 'found'
-                    ? 'bg-error-50 border-error-200 text-error-700'
+                  type === 'found'
+                    ? 'bg-orange-50 border-orange-200 text-orange-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
-                onClick={() => setStatus('found')}
+                onClick={() => setType('found')}
               >
                 Found Pet
               </button>
             </div>
-          </div>
-          
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-            <input
-              type="text"
-              name="title"
-              placeholder={`${status === 'lost' ? 'Missing' : 'Found'} [Pet Type] - [Information]`}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-            />
           </div>
           
           <div>
@@ -119,38 +145,38 @@ const CreateLostPet: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="flex flex-col md:col-span-2">
               <label htmlFor="lastSeen" className="block text-sm font-medium text-gray-700 mb-2">
-                Last Seen Location
+                { type === 'lost' ? 'Last Seen Location' : 'Found Location' }
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MapPin size={16} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  name="lastSeen"
-                  placeholder="Street name, landmark, etc."
-                  className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                />
+              <div className="relative grow">
+                <button
+                  type="button"
+                  onClick={() => setShowLocationPicker('lastSeen')}
+                  className="w-full flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                >
+                  <MapPin size={16} className="text-gray-400 mr-2" />
+                  {lastSeen ? lastSeen.address : 'Select on map'}
+                </button>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-2">Area</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MapPin size={16} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  name="area"
-                  placeholder="Neighborhood, district, etc."
-                  className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                />
+            { type === 'lost' && 
+            <div className="flex flex-col md:col-span-2">
+              <label htmlFor="area" className="block text-sm font-medium mb-2">Area</label>
+              <div className="relative grow">
+                <button
+                  type="button"
+                  onClick={() => setShowLocationPicker('area')}
+                  className="w-full flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                >
+                  <MapPin size={16} className="text-gray-400 mr-2" />
+                  {area ? area.address : 'Select on map'}
+                </button>
               </div>
             </div>
-            
+            }
+
             <div>
               <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-2">Contact Information</label>
               <input
@@ -162,12 +188,12 @@ const CreateLostPet: React.FC = () => {
             </div>
             
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                {status === 'lost' ? 'Date Lost' : 'Date Found'}
+              <label htmlFor="lostAt" className="block text-sm font-medium text-gray-700 mb-2">
+                {type === 'lost' ? 'Date Lost' : 'Date Found'}
               </label>
               <input
                 type="date"
-                name="date"
+                name="lostAt"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -176,7 +202,7 @@ const CreateLostPet: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Photos/Videos</label>
             {previewUrls.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-6">
                 {previewUrls.map((url, index) => (
                   <div key={index} className="relative aspect-square">
                     <img src={url} alt="Preview" className="h-full w-full object-cover rounded-md" />
@@ -222,6 +248,20 @@ const CreateLostPet: React.FC = () => {
           </div>
         </form>
       </Card>
+
+      {showLocationPicker && (
+        <LocationPicker
+          onSelected={handleLocationSelect}
+          onClose={() => setShowLocationPicker(null)}
+          userLocation={userLocation}
+        />
+      )}
+
+      {isLoading && (
+        <div className="fixed inset-0 z-50 bg-black/10 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary-500 border-opacity-50"></div>
+        </div>
+      )}
     </motion.div>
   );
 };

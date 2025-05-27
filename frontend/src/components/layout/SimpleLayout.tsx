@@ -13,10 +13,12 @@ const SimpleLayout: React.FC = () => {
             <span>FurBook</span>
           </Link>
           
-          <Link to="/" className="flex items-center text-gray-600 hover:text-primary-600 transition-colors">
-            <Home size={20} className="mr-1" />
-            <span>Back to Home</span>
-          </Link>
+          <div 
+            onClick={() => window.history.back()} 
+            className="flex items-center text-gray-600 hover:text-primary-600 transition-colors cursor-pointer text-lg mr-3"
+          >
+            <span>Back</span>
+          </div>
         </div>
       </header>
       

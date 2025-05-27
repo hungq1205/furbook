@@ -1,18 +1,37 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { MapPin, Users, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Post } from '../../types/post';
 import Avatar from '../common/Avatar';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import { formatDistanceToNow } from '../../utils/dateUtils';
+import { calcDistance, formatDistance, formatDistanceToNow } from '../../utils/common';
 
 interface LostPetCardProps {
   post: Post;
+  userLocation: {lat: number, lng: number} | undefined;
 }
 
-const LostPetCard: React.FC<LostPetCardProps> = ({ post }) => {
-  const baseTagClassName = 'px-2 py-1 rounded-full text-xs font-medium ring-2 ring-white'
+export const getTagColor = (type: 'lost' | 'found' | 'blog', isResolved?: boolean): string => {
+  if (isResolved)
+    return 'bg-neutral-100 text-neutral-700';
+  return type === 'lost' 
+    ? 'bg-error-100 text-error-700' 
+    : 'bg-orange-100 text-orange-700';
+};
+
+const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
+  const baseTagClassName = 'px-2 py-1 rounded-full text-xs font-medium ring-2 ring-white';
+  const tagColor = getTagColor(post.type, post.isResolved);
+
+  const distance = useMemo(() => {
+    if (!userLocation || !post.lastSeen) return "0";
+    return formatDistance(calcDistance(
+      userLocation.lat, userLocation.lng,
+      post.lastSeen.lat, post.lastSeen.lng
+    ));
+  }, [userLocation, post.lastSeen]);
+
   return (
     <Card interactive className="h-full" bg={`${!post.isResolved ? 'bg-white-100' : 'bg-teal-50'}`}>
       <div className="relative">
@@ -24,11 +43,14 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post }) => {
           />
         )}
         <div className='absolute top-3 right-3 flex flex-row space-x-2'>
-          <div className={`${baseTagClassName} ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}>
+          { !post.isResolved && userLocation && 
+            <div className={`${baseTagClassName} bg-sky-100 text-sky-700`}>{distance} away</div>
+          }
+          <div className={`${baseTagClassName} ${tagColor}`}>
             {post.type === 'lost' ? 'Missing' : 'Found'}
           </div>
-          { post.isResolved && 
-            <div className={`${baseTagClassName} bg-success-100 text-success-700`}>Resolved</div> 
+          { post.isResolved &&
+            <div className={`${baseTagClassName} bg-success-100 text-success-700`}>Resolved</div>
           }
         </div>
       </div>

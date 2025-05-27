@@ -4,7 +4,7 @@ import { Search, Send } from 'lucide-react';
 import Avatar from '../components/common/Avatar';
 import Card from '../components/common/Card';
 // import { friends, messages, groupChats, currentUser } from '../data/mockData';
-import { formatDistanceToNow } from '../utils/dateUtils';
+import { formatDistanceToNow } from '../utils/common';
 import { groupChatService } from '../services/groupChatService';
 import { GroupChat, Message } from '../types/message';
 import { handleError } from '../utils/errors';

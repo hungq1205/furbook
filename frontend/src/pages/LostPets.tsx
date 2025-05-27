@@ -8,15 +8,34 @@ import { Post } from '../types/post';
 import { postService } from '../services/postService';
 import { handleError } from '../utils/errors';
 import { useAuth } from '../services/authService';
+import LostPetsMap from '../components/map/LostPetsMap';
 
 const LostPets: React.FC = () => {
   const authService = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
 
   useEffect(() => {
-    postService.getByUsers(authService.currentUserFriends!.map(f => f.username))
-      .then(posts => setPosts(posts.filter(post => post.type === 'lost' || post.type === 'found')))
-      .catch(error => handleError(error, 'Failed to fetch posts', authService.logout));
+    if (!userLocation) return;
+    postService.getNearbyLosts(userLocation.lat, userLocation.lng, 1)
+      .then(setPosts)
+      .catch(error => handleError(error, 'Failed to fetch lost posts', authService.logout));
+  }, [userLocation]);
+
+  useEffect(() => {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        }),
+        err => {
+          console.error('Error getting location:', err);
+          setUserLocation({ lat: 0, lng: 0 }); 
+        }
+      );
+    else
+      setUserLocation({ lat: 0, lng: 0 }); 
   }, []);
 
   return (
@@ -35,6 +54,8 @@ const LostPets: React.FC = () => {
           </Link>
         </div>
         
+        { userLocation && <LostPetsMap posts={posts} userLocation={userLocation} /> }
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {posts.map((post, index) => (
             <motion.div
@@ -43,7 +64,7 @@ const LostPets: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <LostPetCard post={post} />
+              <LostPetCard post={post} userLocation={userLocation} />
             </motion.div>
           ))}
         </div>

@@ -31,8 +31,8 @@ func PostEntityToPresenter(post *entity.Post, user *presenter.User) *presenter.P
 		CommentNum:   len(post.Comments),
 
 		LostAt:       post.LostAt,
-		Area:         post.Area,
-		LastSeen:     post.LastSeen,
+		Area:         presenter.LocationEntityToPresenter(post.Area),
+		LastSeen:     presenter.LocationEntityToPresenter(post.LastSeen),
 		ContactInfo:  post.ContactInfo,
 		IsResolved:   post.IsResolved,
 		Participants: post.Participants,

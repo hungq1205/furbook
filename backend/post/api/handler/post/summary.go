@@ -6,6 +6,7 @@ import (
 	"post/api/payload"
 	"post/usecase/post"
 	"post/util"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +27,35 @@ func GetPost(c *gin.Context, postService *post.Service, userClient client.UserCl
 	}
 
 	c.JSON(http.StatusOK, pPost)
+}
+
+func GetNearLostPosts(c *gin.Context, postService *post.Service, userClient client.UserClient) {
+	ctx := c.Request.Context()
+	lng, err := strconv.ParseFloat(c.Query("lng"), 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid longitude"})
+		return
+	}
+	lat, err := strconv.ParseFloat(c.Query("lat"), 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid latitude"})
+		return
+	}
+	pagination := util.ExtractPagination(c)
+
+	posts, err := postService.GetNearLostPosts(ctx, lat, lng, pagination)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	pPosts, err := ListPostEntityToPresenterWithClient(posts, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, pPosts)
 }
 
 func GetPostsOfUser(c *gin.Context, postService *post.Service, userClient client.UserClient) {

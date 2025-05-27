@@ -22,12 +22,18 @@ type Post struct {
 	CommentNum   int                  `json:"commentNum"`
 
 	// Optional: Lost Found Post
-	LostAt       *time.Time       `json:"lostAt,omitempty"`
-	Area         *entity.Location `json:"area,omitempty"`
-	LastSeen     *entity.Location `json:"lastSeen,omitempty"`
-	ContactInfo  string           `json:"contactInfo,omitempty"`
-	IsResolved   bool             `json:"isResolved,omitempty"`
-	Participants []string         `json:"participants,omitempty"`
+	LostAt       *time.Time `json:"lostAt,omitempty"`
+	Area         *Location  `json:"area,omitempty"`
+	LastSeen     *Location  `json:"lastSeen,omitempty"`
+	ContactInfo  string     `json:"contactInfo,omitempty"`
+	IsResolved   bool       `json:"isResolved,omitempty"`
+	Participants []string   `json:"participants,omitempty"`
+}
+
+type Location struct {
+	Address string  `json:"address"`
+	Lat     float64 `json:"lat"`
+	Lng     float64 `json:"lng"`
 }
 
 type Comment struct {
@@ -36,4 +42,15 @@ type Comment struct {
 	Avatar      string    `json:"avatar"`
 	Content     string    `json:"content"`
 	CreatedAt   time.Time `json:"createdAt"`
+}
+
+func LocationEntityToPresenter(loc *entity.Location) *Location {
+	if loc == nil {
+		return nil
+	}
+	return &Location{
+		Address: loc.Address,
+		Lat:     loc.Location.Coordinates[1],
+		Lng:     loc.Location.Coordinates[0],
+	}
 }

@@ -134,10 +134,6 @@ const Profile: React.FC = () => {
               
               <div className="flex flex-wrap gap-6 mt-4">
                 <div className="text-center">
-                  <p className="text-xl font-bold text-gray-900">{posts.length}</p>
-                  <p className="text-sm text-gray-500">Posts</p>
-                </div>
-                <div className="text-center">
                   <p className="text-xl font-bold text-gray-900">{profileUser.friendNum}</p>
                   <p className="text-sm text-gray-500">Friends</p>
                 </div>
@@ -225,7 +221,7 @@ const Profile: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <LostPetCard post={post} />
+                  <LostPetCard post={post} userLocation={undefined}/>
                 </motion.div>
               ))
             ) : (
@@ -244,7 +240,7 @@ const Profile: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <LostPetCard post={post} />
+                  <LostPetCard post={post} userLocation={undefined}/>
                 </motion.div>
               ))
             ) : (

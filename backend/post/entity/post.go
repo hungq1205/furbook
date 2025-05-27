@@ -35,7 +35,12 @@ type Post struct {
 	Participants []string   `bson:"participants,omitempty" json:"participants,omitempty"`
 }
 
+type GeoPoint struct {
+	Type        string    `bson:"type" json:"type"`
+	Coordinates []float64 `bson:"coordinates" json:"coordinates"`
+}
+
 type Location struct {
-	Longitude float64 `bson:"longitude" json:"longitude"`
-	Latitude  float64 `bson:"latitude" json:"latitude"`
+	Location GeoPoint `bson:"location" json:"location"`
+	Address  string   `bson:"address" json:"address"`
 }

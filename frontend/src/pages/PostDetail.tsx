@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,27 +7,41 @@ import Avatar from '../components/common/Avatar';
 import Card from '../components/common/Card';
 import MediaGallery from '../components/feed/MediaGallery';
 // import { posts } from '../data/mockData';
-import { formatDistanceToNow } from '../utils/dateUtils';
+import { calcDistance, formatDistance, formatDistanceToNow } from '../utils/common';
 import { handleError } from '../utils/errors';
 import { postService } from '../services/postService';
 import { Post, Comment } from '../types/post';
 import { useAuth } from '../services/authService';
+import { getTagColor } from '../components/lost-pet/LostPetCard';
+import LostPetMap from '../components/map/LostPetMap';
 
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const authService = useAuth();
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
 
-  const [post, setPost] = React.useState<Post | null>(null);
-  const [comments, setComments] = React.useState<Comment[]>([]); 
-  const [comment, setComment] = React.useState<string>('');
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]); 
+  const [comment, setComment] = useState<string>('');
 
-  const [userInteracted, setUserInteracted] = React.useState<Boolean>(false);
-  const [interactionCount, setInteractionCount] = React.useState<number>(0);
+  const [userInteracted, setUserInteracted] = useState<Boolean>(false);
+  const [interactionCount, setInteractionCount] = useState<number>(0);
 
-  const [userHelped, setUserHelped] = React.useState<Boolean>(false);
-  const [participantCount, setParticipantCount] = React.useState<number>(0);
+  const [userHelped, setUserHelped] = useState<Boolean>(false);
+  const [participantCount, setParticipantCount] = useState<number>(0);
 
   const authUsername = authService.currentUser!.username;
+
+  useEffect(() => {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        }),
+        err => console.error('Error getting location:', err)
+      );
+  }, []);
 
   const fetchComments = () => {
     if (!id) return;
@@ -134,9 +148,7 @@ const PostDetail: React.FC = () => {
               { post.isResolved && <div className="mb-4 inline-block px-3 py-1 mr-2 rounded-full text-sm font-medium bg-success-100 text-success-700">
                 Resolved
               </div> }
-              <div className={`mb-4 inline-block px-3 py-1 rounded-full text-sm font-medium 
-                ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}
-              >
+              <div className={`mb-4 inline-block px-3 py-1 rounded-full text-sm font-medium ${getTagColor(post.type, post.isResolved)}`}>
                 {post.type === 'lost' ? 'Missing' : 'Found'}
               </div>
             </>
@@ -176,6 +188,8 @@ const PostDetail: React.FC = () => {
             </div>
           )}
           
+          <LostPetMap post={post} userLocation={userLocation} />
+
           <div className="flex flex-wrap items-center justify-between border-t border-b border-gray-200 py-4 my-6">
             <div className="flex space-x-6 mb-2 md:mb-0">
               <button className="flex items-center text-gray-600 hover:text-red-500" 

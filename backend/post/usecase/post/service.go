@@ -2,6 +2,9 @@ package post
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"post/entity"
 	"post/infrastructure/repository/post"
 	"post/util"
@@ -28,6 +31,10 @@ func (s *Service) GetPost(ctx context.Context, id string) (*entity.Post, error) 
 	return post, nil
 }
 
+func (s *Service) GetNearLostPosts(ctx context.Context, latitude float64, longitude float64, pagination util.Pagination) ([]*entity.Post, error) {
+	return s.postRepo.GetNearLostPosts(ctx, latitude, longitude, pagination)
+}
+
 func (s *Service) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
 	return s.postRepo.GetPostsOfUser(ctx, username, pagination)
 }
@@ -49,6 +56,22 @@ func (s *Service) CreateBlogPost(ctx context.Context, username, content string, 
 }
 
 func (s *Service) CreateLostPetPost(ctx context.Context, username, contactInfo string, postType entity.PostType, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
+	if postType != entity.Found && area != nil && len(area.Location.Coordinates) > 0 {
+		address, err := fetchAddress(area.Location.Coordinates[1], area.Location.Coordinates[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch address for area: %w", err)
+		}
+		area.Address = address
+	}
+
+	if lastSeen != nil && len(lastSeen.Location.Coordinates) > 0 {
+		address, err := fetchAddress(lastSeen.Location.Coordinates[1], lastSeen.Location.Coordinates[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch address for lastSeen: %w", err)
+		}
+		lastSeen.Address = address
+	}
+
 	post, err := s.postRepo.CreateLostPetPost(ctx, username, contactInfo, postType, content, medias, area, lastSeen, lostAt)
 	if err != nil {
 		return nil, err
@@ -111,4 +134,26 @@ func (s *Service) Participate(ctx context.Context, postId, username string) erro
 
 func (s *Service) Unparticipate(ctx context.Context, postId, username string) error {
 	return s.postRepo.Unparticipate(ctx, postId, username)
+}
+
+func fetchAddress(lat, lon float64) (string, error) {
+	url := fmt.Sprintf("https://nominatim.openstreetmap.org/reverse?lat=%f&lon=%f&format=json", lat, lon)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("failed to make HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var result struct {
+		DisplayName string `json:"display_name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return result.DisplayName, nil
 }

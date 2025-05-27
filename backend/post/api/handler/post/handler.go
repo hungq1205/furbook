@@ -15,6 +15,10 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 			GetPost(c, postService, userClient)
 		})
 
+		postGroup.GET("/lost", func(c *gin.Context) {
+			GetNearLostPosts(c, postService, userClient)
+		})
+
 		postGroup.GET("/ofUser/:username", func(c *gin.Context) {
 			GetPostsOfUser(c, postService, userClient)
 		})
@@ -34,7 +38,7 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 		})
 
 		authGroup.POST("/lost", func(c *gin.Context) {
-			CreateBlogPost(c, postService)
+			CreateLostPetPost(c, postService, userClient)
 		})
 
 		authGroup.PATCH("/:postID/content", func(c *gin.Context) {

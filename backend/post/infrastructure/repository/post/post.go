@@ -37,6 +37,39 @@ func (p *Repository) GetPost(ctx context.Context, id string) (*entity.Post, erro
 	return &post, nil
 }
 
+func (p *Repository) GetNearLostPosts(ctx context.Context, latitude float64, longitude float64, pagination util.Pagination) ([]*entity.Post, error) {
+	var posts []*entity.Post
+	filter := bson.M{
+		"type": bson.M{
+			"$in": bson.A{"lost", "found"},
+		},
+		"lastSeen.location": bson.M{
+			"$near": bson.M{
+				"$geometry": bson.M{
+					"type":        "Point",
+					"coordinates": []float64{longitude, latitude},
+				},
+			},
+		},
+	}
+
+	opts := options.Find().
+		SetSkip(pagination.Offset()).
+		SetLimit(pagination.Size)
+
+	cursor, err := p.postCollection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &posts); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
 func (p *Repository) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
 	var posts []*entity.Post
 
@@ -120,23 +153,44 @@ func (p *Repository) CreateBlogPost(ctx context.Context, username, content strin
 }
 
 func (p *Repository) CreateLostPetPost(ctx context.Context, username string, contactInfo string, postType entity.PostType, content string, medias []entity.Media, area, lastSeen *entity.Location, lostAt *time.Time) (*entity.Post, error) {
-	post := entity.Post{
-		ID:           primitive.NewObjectID(),
-		Username:     username,
-		Type:         postType,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-		Comments:     []entity.Comment{},
-		Interactions: []entity.Interaction{},
-		Content:      content,
-		Medias:       medias,
+	var post entity.Post
+	if postType == entity.Found {
+		post = entity.Post{
+			ID:           primitive.NewObjectID(),
+			Username:     username,
+			Type:         postType,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+			Comments:     []entity.Comment{},
+			Interactions: []entity.Interaction{},
+			Content:      content,
+			Medias:       medias,
 
-		Participants: []string{},
-		ContactInfo:  contactInfo,
-		Area:         area,
-		LastSeen:     lastSeen,
-		LostAt:       lostAt,
-		IsResolved:   false,
+			Participants: []string{},
+			ContactInfo:  contactInfo,
+			LastSeen:     lastSeen,
+			LostAt:       lostAt,
+			IsResolved:   false,
+		}
+	} else {
+		post = entity.Post{
+			ID:           primitive.NewObjectID(),
+			Username:     username,
+			Type:         postType,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+			Comments:     []entity.Comment{},
+			Interactions: []entity.Interaction{},
+			Content:      content,
+			Medias:       medias,
+
+			Participants: []string{},
+			ContactInfo:  contactInfo,
+			Area:         area,
+			LastSeen:     lastSeen,
+			LostAt:       lostAt,
+			IsResolved:   false,
+		}
 	}
 
 	_, err := p.postCollection.InsertOne(ctx, post)

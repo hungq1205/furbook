@@ -36,7 +36,7 @@ class WebSocketService {
   private authPromise: Promise<void> | null = null;
 
   async connect(token: string): Promise<void> {
-    const wsUrl = `ws://localhost:3000/ws`;
+    const wsUrl = import.meta.env.VITE_WEB_SOCKET_URL || 'ws://localhost:3000/ws';
     this.socket = new WebSocket(wsUrl);
     
     this.authPromise = new Promise((resolve, reject) => {

@@ -9,8 +9,8 @@ export type Media = {
 };
 
 export type Location = {
-    latitude: number;
-    longitude: number;
+    lat: number;
+    lng: number;
 };
 
 export interface BlogPostPayload {
@@ -31,6 +31,13 @@ export const postService = {
     const response = await fetch(`${POST_URL}/${postId}`, {
       headers: defaultAuthHeaders()
     });
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+    return response.json();
+  },
+
+  async getNearbyLosts(lat: number, lng: number, page: number): Promise<Post[]> {
+    const url = `${POST_URL}/lost?lat=${lat}&lng=${lng}&page=${page}`;
+    const response = await fetch(url);
     if (!response.ok) throw new HttpError(response.status, await response.json());
     return response.json();
   },

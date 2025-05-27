@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Post } from '../../types/post';
@@ -8,11 +8,12 @@ import IconButton from '../common/IconButton';
 import MediaGallery from './MediaGallery';
 import EditPostModal from '../post/EditPostModal';
 import { BlogPostPayload } from '../../services/postService';
-import { formatDistanceToNow } from '../../utils/dateUtils';
+import { calcDistance, formatDistance, formatDistanceToNow } from '../../utils/common';
 // import { currentUser } from '../../data/mockData';
 import { postService } from '../../services/postService';
 import { useAuth } from '../../services/authService';
 import { handleError } from '../../utils/errors';
+import { getTagColor } from '../lost-pet/LostPetCard';
 
 interface PostCardProps {
   post: Post;
@@ -22,11 +23,31 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const authService = useAuth();
   const navigate = useNavigate();
 
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
   const [showOptions, setShowOptions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [userInteracted, setUserInteracted] = React.useState<Boolean>(false);
   const [interactionCount, setInteractionCount] = useState<number>(0);
   const isOwnPost = post.username === authService.currentUser!.username;
+
+  const distance = useMemo(() => {
+    if (!userLocation || !post.lastSeen) return "0";
+    return formatDistance(calcDistance(
+      userLocation.lat, userLocation.lng,
+      post.lastSeen.lat, post.lastSeen.lng
+    ));
+  }, [userLocation, post.lastSeen]);
+
+  useEffect(() => {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        pos => setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        }),
+        err => console.error('Error getting location:', err)
+      );
+  }, []);
 
   useEffect(() => {
     const interacted = post.interactions.some(i => i.username === authService.currentUser!.username)
@@ -84,14 +105,19 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const LostPostTags: React.FC = () => (
     post.type !== 'blog' && (
       <div className='mr-3'>
-        <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
-          ${!post.isResolved ? 'bg-error-100 text-error-700' : 'bg-neutral-100 text-neutral-700'}`}
-        >
+        { !post.isResolved && userLocation &&
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-700">
+          {distance} away
+          </div>
+        }
+        <div className={`inline-block px-3 py-1 ml-2 rounded-full text-sm font-medium ${getTagColor(post.type, post.isResolved)}`}>
           {post.type === 'lost' ? 'Missing' : 'Found'}
         </div>
-          { post.isResolved && <div className="inline-block px-3 py-1 ml-2 rounded-full text-sm font-medium bg-success-100 text-success-700">
+        { post.isResolved &&
+          <div className="inline-block px-3 py-1 ml-2 rounded-full text-sm font-medium bg-success-100 text-success-700">
             Resolved
-          </div> }
+          </div>
+        }
       </div>
     )
   );
@@ -145,28 +171,39 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             )}
           </div>
 
-          {post.type !== 'blog' && (
+          <p onClick={handleContentClick} className="text-gray-800 pb-3 cursor-pointer">{post.content}</p>
+            
+          {post.type === 'lost' && (
             <div className="cursor-pointer pb-6 pt-3" onClick={handleContentClick}>
-              <div className="grid grid-cols-3">
+              <div className="grid grid-cols-2">
                 <div className='justify-items-center'>
                   <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Last Seen Location</h3>
-                  <p className="text-gray-800">{post.lastSeen?.address}</p>
+                  <p className="text-gray-800 text-center px-2">{post.lastSeen?.address}</p>
                 </div>
                 <div className='justify-items-center'>
                   <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Area</h3>
-                  <p className="text-gray-800">{post.area?.address}</p>
+                  <p className="text-gray-800 text-center px-2">{post.area?.address}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {post.type === 'found' && (
+            <div className="cursor-pointer pb-6 pt-3" onClick={handleContentClick}>
+              <div className="grid grid-cols-2">
+                <div className='justify-items-center'>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Found Location</h3>
+                  <p className="text-gray-800 text-center px-2">{post.lastSeen?.address}</p>
                 </div>
                 <div className='justify-items-center'>
                   <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Contact Information</h3>
-                  <p className="text-gray-800">{post.contactInfo}</p>
+                  <p className="text-gray-800 text-center px-2">{post.contactInfo}</p>
                 </div>
               </div>
             </div>
           )}
 
           <div className="cursor-pointer">
-            <p onClick={handleContentClick} className="text-gray-800 mb-3">{post.content}</p>
-            
             {post.medias?.length > 0 && (
               <MediaGallery media={post.medias} className="mb-3" />
             )}
