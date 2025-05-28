@@ -222,12 +222,12 @@ func (p *Repository) PatchContent(ctx context.Context, id, content string, media
 	return result.MatchedCount == 0, nil
 }
 
-func (p *Repository) PatchFound(ctx context.Context, id string, found bool) error {
+func (p *Repository) PatchFound(ctx context.Context, id string, isResolved bool) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = p.postCollection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"found": found})
+	_, err = p.postCollection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"isResolved": isResolved}})
 	return err
 }
 

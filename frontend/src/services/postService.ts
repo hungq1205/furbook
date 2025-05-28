@@ -90,14 +90,13 @@ export const postService = {
     return response.json();
   },
 
-  async updateLostFoundStatus(postId: string, isResolved: boolean): Promise<Post> {
+  async updateLostFoundStatus(postId: string, isResolved: boolean): Promise<void> {
     const response = await fetch(`${POST_URL}/${postId}/lostFoundStatus`, {
       method: 'PATCH',
       headers: defaultAuthHeaders(),
       body: JSON.stringify({ isResolved })
     });
-    if (!response.ok) throw new HttpError(response.status, await response.json());
-    return response.json();
+    if (!response.ok) throw new HttpError(response.status, 'Failed to update lost found status');
   },
 
   async delete(postId: string): Promise<void> {
