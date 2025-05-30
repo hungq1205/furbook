@@ -17,9 +17,10 @@ import { getTagColor } from '../lost-pet/LostPetCard';
 
 interface PostCardProps {
   post: Post;
+  onDelete: (id: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onDelete }) => {
   const authService = useAuth();
   const navigate = useNavigate();
 
@@ -77,6 +78,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await postService.delete(post.id);
+        onDelete(post.id)
       } catch (error) {
         console.error('Failed to delete post:', error);
       }

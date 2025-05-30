@@ -66,7 +66,7 @@ func (c *UserClientImpl) CreateUser(username string, displayName string) (*User,
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK || resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("failed to create user: %s", resp.Status)
 	}
 

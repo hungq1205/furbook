@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: post
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: post
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post
+  template:
+    metadata:
+      labels:
+        app: post
+    spec:
+      containers:
+        - name: post
+          image: post:latest
+          ports:
+            - containerPort: 8080

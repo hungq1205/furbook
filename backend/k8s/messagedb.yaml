@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: messagedb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: messagedb
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: messagedb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messagedb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messagedb
+  template:
+    metadata:
+      labels:
+        app: messagedb
+    spec:
+      containers:
+        - name: messagedb
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "root"
+            - name: POSTGRES_DB
+              value: "message"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: messagedb-data
+      volumes:
+        - name: messagedb-data
+          persistentVolumeClaim:
+            claimName: messagedb-pvc

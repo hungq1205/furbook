@@ -33,15 +33,15 @@ func MakeAuthHandler(app *gin.Engine, authRepo *Repository, userClient client.Us
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			// val, err := authRepo.Authenticate(body.Username, body.Password)
-			// if err != nil {
-			// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			// 	return
-			// }
-			// if !val {
-			// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
-			// 	return
-			// }
+			val, err := authRepo.Authenticate(body.Username, body.Password)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			if !val {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+				return
+			}
 			token, err := internal.GenerateJwt(body.Username)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -66,7 +66,7 @@ func MakeAuthHandler(app *gin.Engine, authRepo *Repository, userClient client.Us
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			if euser == nil {
+			if euser != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
 				return
 			}

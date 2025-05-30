@@ -22,6 +22,21 @@ export const userService = {
     return response.json();
   },
 
+  async updateUser({username, displayName, bio, avatar}: {username: string, displayName?: string, bio?: string, avatar?: string}): Promise<User> {
+    const user = await this.getUser(username);
+    const response = await fetch(`${USER_URL}`, {
+      method: 'PATCH',
+      headers: defaultAuthHeaders(),
+      body: JSON.stringify({ 
+        displayName: displayName ?? user.displayName,
+        bio: bio ?? user.bio,
+        avatar: avatar ?? user.avatar,
+      })
+    });
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+    return response.json();
+  },
+
   async getFriends(): Promise<User[]> {
     const response = await fetch(`${USER_URL}/friends`, {
       headers: defaultAuthHeaders()

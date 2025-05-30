@@ -30,7 +30,7 @@ const Auth: React.FC = () => {
         }
         navigate('/');
     } catch (err) {
-        setError(err instanceof HttpError ? err.message : 'Failed to sign up');
+        setError(err instanceof HttpError ? err.message : isLogin ? 'Failed to sign in' : 'Failed to sign up');
     }
   };
 
@@ -46,7 +46,7 @@ const Auth: React.FC = () => {
           <PawPrint className="text-primary-600" size={48} />
         </motion.div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Join PetPals
+          {isLogin ? 'Log In' : 'Join FurBook'}
         </h2>
         {
             isLogin ?

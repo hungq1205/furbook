@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../services/authService';
 import { Media, postService, BlogPostPayload } from '../../services/postService';
 import { fileService } from '../../services/fileService';
+import { handleError } from '../../utils/errors';
 
 const CreatePostInput: React.FC = () => {
   const authService = useAuth();
@@ -29,13 +30,17 @@ const CreatePostInput: React.FC = () => {
   const handleSubmit = async () => {
     if (isLoading) return;
     setIsLoading(true);
-    const medias: Media[] = await Promise.all(
-      uploadMedias.map(async (file) => ({
-        type: file.type.startsWith('image/') ? 'image' : 'video',
-        url: await fileService.upload(file),
-      } as Media))
-    );
-    await postService.createBlogPost({ content, medias } as BlogPostPayload);
+    try {
+      const medias: Media[] = await Promise.all(
+        uploadMedias.map(async (file) => ({
+          type: file.type.startsWith('image/') ? 'image' : 'video',
+          url: await fileService.upload(file),
+        } as Media))
+      );
+      await postService.createBlogPost({ content, medias } as BlogPostPayload);
+    } catch (err) {
+      handleError(err, 'failed to create blog post', authService.logout);
+    }
 
     setContent('');
     setUploadMedias([]);

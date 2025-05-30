@@ -56,7 +56,7 @@ func CreateUser(ctx *gin.Context, userService user.UseCase, friendService friend
 		return
 	}
 
-	usr, err := userService.CreateUser(body.Username, body.Avatar)
+	usr, err := userService.CreateUser(body.Username, body.DisplayName)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return

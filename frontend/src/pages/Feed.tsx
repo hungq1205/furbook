@@ -18,6 +18,8 @@ const Feed: React.FC = () => {
       .catch(error => handleError(error, 'Failed to fetch posts', authService.logout));
   }, []);
   
+  const handleDelete = (id: string) => setPosts(posts.filter(p => p.id !== id))
+
   return (
     <div>
       <motion.div
@@ -29,10 +31,8 @@ const Feed: React.FC = () => {
         
         <div className="space-y-4">
           {posts.map((post) => (
-            <div
-              key={post.id}
-            >
-              <PostCard post={post} />
+            <div key={post.id}>
+              <PostCard post={post} onDelete={handleDelete}/>
             </div>
           ))}
         </div>

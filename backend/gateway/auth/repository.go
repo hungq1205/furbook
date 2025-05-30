@@ -11,6 +11,7 @@ import (
 type User struct {
 	Username       string `gorm:"primary_key"`
 	PasswordHashed string `gorm:"password_hashed"`
+	Salt           string `gorm:"salt"`
 }
 
 type Repository struct {
@@ -27,17 +28,17 @@ func NewAuthRepository(dsn string) (*Repository, error) {
 		db: db,
 	}, nil
 }
+
 func (r *Repository) Authenticate(username, password string) (bool, error) {
-	var passwordHashed string
-	err := r.db.Model(&User{}).Where("username = ?", username).Pluck("password_hashed", &passwordHashed).Error
+	var user User
+	err := r.db.Where("username = ?", username).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
 	if err != nil {
 		return false, err
 	}
-
-	return internal.CompareHashAndPassword(passwordHashed, password), nil
+	return internal.CompareHashAndPassword(user.PasswordHashed, password, user.Salt), nil
 }
 
 func (r *Repository) GetUser(username string) (*User, error) {
@@ -53,11 +54,15 @@ func (r *Repository) GetUser(username string) (*User, error) {
 }
 
 func (r *Repository) CreateUser(username, password string) error {
-	return r.db.Create(&User{Username: username, PasswordHashed: internal.Hash(password)}).Error
+	salt := internal.GenerateSalt()
+	hashedPassword := internal.Hash(password, salt)
+	return r.db.Create(&User{Username: username, PasswordHashed: hashedPassword, Salt: salt}).Error
 }
 
 func (r *Repository) UpdateUser(username, password string) error {
-	return r.db.Save(&User{Username: username, PasswordHashed: internal.Hash(password)}).Error
+	salt := internal.GenerateSalt()
+	hashedPassword := internal.Hash(password, salt)
+	return r.db.Save(&User{Username: username, PasswordHashed: hashedPassword, Salt: salt}).Error
 }
 
 func (r *Repository) DeleteUser(username string) error {

@@ -33,8 +33,8 @@ func (r *UserRepository) GetUsers(usernames []string) ([]*entity.User, error) {
 	return users, nil
 }
 
-func (r *UserRepository) CreateUser(username string, avatar string) (*entity.User, error) {
-	user := &entity.User{Username: username, Avatar: avatar}
+func (r *UserRepository) CreateUser(username string, displayName string) (*entity.User, error) {
+	user := &entity.User{Username: username, DisplayName: displayName}
 	if err := r.db.Create(user).Error; err != nil {
 		return nil, err
 	}

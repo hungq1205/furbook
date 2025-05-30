@@ -1,4 +1,4 @@
-import React, { UIEventHandler, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Minus, Maximize2 } from 'lucide-react';
 import Avatar from '../common/Avatar';
@@ -7,7 +7,7 @@ import { useAuth } from '../../services/authService';
 import { messageService } from '../../services/messageService';
 import { GroupChat, Message } from '../../types/message';
 import { groupChatService } from '../../services/groupChatService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ChatTabProps {
   groupId: number;
@@ -177,7 +177,9 @@ const ChatTab: React.FC<ChatTabProps> = ({ groupId, username, displayName, avata
 
 const FriendsSidebar: React.FC = () => {
   const authService = useAuth();
+  const navigate = useNavigate();
 
+  const [query, setQuery] = useState("");
   const [chats, setChats] = useState<Map<number, GroupChat>>(new Map());
   const [openChats, setOpenChats] = useState<number[]>([]);
   const [minimizedChats, setMinimizedChats] = useState<number[]>([]);
@@ -220,7 +222,15 @@ const FriendsSidebar: React.FC = () => {
       setMinimizedChats([...minimizedChats, id]);
     }
   };
-  
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        navigate(`/profile/${e.currentTarget.value}`);
+        setQuery('')
+      }
+    };
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-gray-200">
@@ -229,12 +239,22 @@ const FriendsSidebar: React.FC = () => {
           type="text"
           placeholder="Search friends..."
           className="w-full px-3 py-2 bg-gray-100 rounded-md text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary-500"
+          value={query}
+          onKeyDown={handleKeyDown}
+          onChange={e => setQuery(e.target.value)}
         />
+        {query && (
+          <Link to={`/profile/${query}`} className="text-sm text-gray-500 mt-2 hover:underline">
+            Go to user @{query}
+          </Link>
+        )}
       </div>
       
       <div className="flex-1 overflow-y-auto p-2">
         <ul className="space-y-2">
-          {authService.currentUserFriends.map(friend => (
+          {authService.currentUserFriends
+          .filter(friend => friend.displayName.toLowerCase().includes(query.toLowerCase()))
+          .map(friend => (
             <li key={friend.username}>
               <button
                 onClick={() => openChat(friend.groupid!)}

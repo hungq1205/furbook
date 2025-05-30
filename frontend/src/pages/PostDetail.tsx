@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy, Ticket, Paperclip } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Heart, MessageCircle, Users, AlertTriangle, Copy, Ticket, Paperclip, Trash2, MoreHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../components/common/Button';
 import Avatar from '../components/common/Avatar';
@@ -14,11 +14,14 @@ import { Post, Comment } from '../types/post';
 import { useAuth } from '../services/authService';
 import { getTagColor } from '../components/lost-pet/LostPetCard';
 import LostPetMap from '../components/map/LostPetMap';
+import IconButton from '../components/common/IconButton';
 
 const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const authService = useAuth();
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
+  const [showOptions, setShowOptions] = useState(false);
 
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]); 
@@ -95,6 +98,15 @@ const PostDetail: React.FC = () => {
     setComment('');
   };
 
+  const handleDelete = () => {
+    if (!id) return;
+    if (!window.confirm('Are you sure to delete this post?')) return;
+    
+    postService.delete(id)
+      .then(() => navigate("/feed"))
+      .catch(error => handleError(error, 'Failed to set lost found post status', authService.logout));
+  };
+
   useEffect(() => {
     postService.getById(id!)
       .then(post => {
@@ -151,6 +163,27 @@ const PostDetail: React.FC = () => {
                 {formatDistanceToNow(new Date(post.createdAt))}
               </p>
             </div>
+            <div className="grow"/>
+            {post.username === authService.currentUser?.username && (
+              <div className="relative">
+                <IconButton
+                  icon={<MoreHorizontal size={18} />} 
+                  label="More options"
+                  onClick={() => setShowOptions(!showOptions)}
+                />
+                {showOptions && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                    <button
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                      onClick={handleDelete}
+                    >
+                      <Trash2 size={16} className="mr-2" />
+                      Delete Post
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           {post.type !== 'blog' && (

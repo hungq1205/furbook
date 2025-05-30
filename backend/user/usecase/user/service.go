@@ -31,8 +31,8 @@ func (s *Service) GetUsers(usernames []string) ([]*entity.User, error) {
 	return users, nil
 }
 
-func (s *Service) CreateUser(username string, avatar string) (*entity.User, error) {
-	usr, err := s.userRepo.CreateUser(username, avatar)
+func (s *Service) CreateUser(username string, displayName string) (*entity.User, error) {
+	usr, err := s.userRepo.CreateUser(username, displayName)
 	if err != nil {
 		return nil, err
 	}

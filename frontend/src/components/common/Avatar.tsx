@@ -4,15 +4,19 @@ import { motion } from 'framer-motion';
 interface AvatarProps {
   src: string;
   alt: string;
+  className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   isOnline?: boolean;
+  onClick?: () => void;
 }
 
 const Avatar: React.FC<AvatarProps> = ({ 
   src, 
   alt, 
+  className,
   size = 'md',
-  isOnline
+  isOnline,
+  onClick,
 }) => {
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -22,9 +26,9 @@ const Avatar: React.FC<AvatarProps> = ({
   };
 
   return (
-    <div className={`${sizeClasses[size]} relative`}>
+    <div className={`${sizeClasses[size]} relative ${className}`} onClick={onClick}>
       <motion.img 
-        src={src} 
+        src={src || 'https://phanmemmkt.vn/wp-content/uploads/2024/09/Hinh-anh-dai-dien-mac-dinh-Facebook.jpg'} 
         alt={alt}
         className={`${sizeClasses[size]} rounded-full object-cover border-2 border-white`}
         whileHover={{ scale: 1.05 }}

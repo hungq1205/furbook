@@ -13,6 +13,8 @@ import { Friendship, User } from '../types/user';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
 import { handleError } from '../utils/errors';
+import { Edit } from 'lucide-react';
+import { fileService } from '../services/fileService';
 
 const Profile: React.FC = () => {
   const authService = useAuth();
@@ -52,6 +54,12 @@ const Profile: React.FC = () => {
       })
       .catch(error => console.error('Failed to fetch posts:', error));
   }, [profileUser]);
+  
+  const handleDelete = (id: string) => {
+    if (!profileUser) return;
+    lostPosts.current = lostPosts.current.filter(p => p.id !== id);
+    setPosts(posts.filter(p => p.id !== id));
+  }
 
   const handleFriendRequest = (resultFriendship: Friendship) => {
     if (!profileUser) return;
@@ -105,6 +113,21 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleUploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length < 0) 
+      return;
+    try {
+      const url = await fileService.upload(e.target.files[0]);
+      const updatedUser = await userService.updateUser({username: currentUser.username, avatar: url});
+      await authService.refresh()
+      if (profileUser?.username === currentUser.username)
+        setProfileUser(updatedUser)
+      e.target.value = '';
+    } catch (err) {
+      handleError(err, 'failed to upload avatar', authService.logout)
+    }
+  };
+
   const tabs = [
     { username: 'posts', label: 'Posts', count: posts.length },
     { username: 'lost-pets', label: 'Lost & Found', count: lostPosts.current.length },
@@ -123,9 +146,29 @@ const Profile: React.FC = () => {
       <Card className="mb-6 overflow-hidden">
         <div className="h-48 bg-gradient-to-r from-primary-500 to-secondary-500"></div>
         <div className="p-6 relative">
-          <div className="absolute top-0 transform -translate-y-1/2 left-6">
-            <Avatar src={profileUser.avatar} alt={profileUser.displayName} size="xl" />
-          </div>
+            <div className="absolute top-0 transform -translate-y-1/2 left-6 cursor-pointer group">
+              <div className="relative">
+                <Avatar
+                  src={profileUser.avatar}
+                  alt={profileUser.displayName}
+                  size="xl"
+                />
+                <div 
+                  className="absolute text-white inset-0 border-2 rounded-full bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => document.getElementById('avatar-input')?.click()}
+                >
+                  <Edit size={30} />
+                </div>
+              </div>
+              <input
+                id="avatar-input"
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleUploadAvatar}
+              />
+            </div>
           
           <div className="pt-12 flex items-start">
             <div>
@@ -202,7 +245,7 @@ const Profile: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <PostCard post={post} />
+                  <PostCard post={post} onDelete={handleDelete}/>
                 </motion.div>
               ))
             ) : (

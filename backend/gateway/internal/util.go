@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -9,17 +11,26 @@ import (
 
 var secretKey = []byte("as you have seen, a very secret key")
 
-func CompareHashAndPassword(hashedPassword, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	return err == nil
+func GenerateSalt() string {
+	salt := make([]byte, 16)
+	_, err := rand.Read(salt)
+	if err != nil {
+		log.Fatalf("Error while generating salt: %v", err)
+	}
+	return base64.StdEncoding.EncodeToString(salt)
 }
 
-func Hash(password string) string {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func Hash(password, salt string) string {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatalf("Error while hashing password: %v", err)
 	}
 	return string(hashedPassword)
+}
+
+func CompareHashAndPassword(hashedPassword, password, salt string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password+salt))
+	return err == nil
 }
 
 func GenerateJwt(username string) (string, error) {

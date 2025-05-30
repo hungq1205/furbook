@@ -10,12 +10,11 @@ const (
 )
 
 type UserCreateRequest struct {
-	Username string `json:"username"`
-	Avatar   string `json:"avatar"`
+	Username    string `json:"username"`
+	DisplayName string `json:"displayName"`
 }
 
 type UserUpdateRequest struct {
-	Username    string `json:"username"`
 	DisplayName string `json:"displayName"`
 	Avatar      string `json:"avatar"`
 	Bio         string `json:"bio"`

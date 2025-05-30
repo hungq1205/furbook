@@ -13,7 +13,7 @@ const CreateLostPet: React.FC = () => {
   const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | undefined>();
   const [type, setType] = useState<'lost' | 'found'>('lost');
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [uploadMedias, setUploadMedias]  = useState<File[]>([]);
   const [showLocationPicker, setShowLocationPicker] = useState<'area' | 'lastSeen' | null>(null);
   const [area, setArea] = useState<Location | null>(null);
   const [lastSeen, setLastSeen] = useState<Location | null>(null);
@@ -39,25 +39,21 @@ const CreateLostPet: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
-      setPreviewUrls([...previewUrls, ...newPreviewUrls]);
-    }
+    if (e.target.files)
+      setUploadMedias([...uploadMedias, ...e.target.files]);
   };
 
   const removePreview = (index: number) => {
-    setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+    setUploadMedias(uploadMedias.filter((_, i) => i !== index));
   };
 
   const toMedias = async (files: File[]): Promise<Media[]> => {
     try {
       return await Promise.all(
         files.map(async file => {
-          const url = await fileService.upload(file);
           return {
             type: file.type.startsWith('image/') ? 'image' : 'video',
-            url: url,
+            url: await fileService.upload(file),
           } as Media;
         })
       );
@@ -71,23 +67,24 @@ const CreateLostPet: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-
-    const rawLostAt = formData.get('lostAt') as string;
-    const lostAt = new Date(rawLostAt).toISOString();
-
-    const data = {
-      type: type,
-      content: formData.get('description') as string,
-      lastSeen: lastSeen,
-      area: area,
-      contactInfo: formData.get('contact') as string,
-      lostAt: lostAt,
-      medias: await toMedias(formData.getAll('medias') as File[]),
-    } as LostPostPayload;
-
     try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+
+      const rawLostAt = formData.get('lostAt') as string;
+      const lostAt = new Date(rawLostAt).toISOString();
+      const medias = await toMedias(uploadMedias);
+
+      const data = {
+        type: type,
+        content: formData.get('description') as string,
+        lastSeen: lastSeen,
+        area: area,
+        contactInfo: formData.get('contact') as string,
+        lostAt: lostAt,
+        medias: medias,
+      } as LostPostPayload;
+
       const post = await postService.createLostPost(data);
       navigate(`/post/${post.id}`)
     } catch (err) {
@@ -204,11 +201,11 @@ const CreateLostPet: React.FC = () => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Photos/Videos</label>
-            {previewUrls.length > 0 && (
+            {uploadMedias.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-6">
-                {previewUrls.map((url, index) => (
+                {uploadMedias.map((media, index) => (
                   <div key={index} className="relative aspect-square">
-                    <img src={url} alt="Preview" className="h-full w-full object-cover rounded-md" />
+                    <img src={URL.createObjectURL(media)} alt="Preview" className="h-full w-full object-cover rounded-md" />
                     <button
                       type="button"
                       onClick={() => removePreview(index)}
