@@ -82,7 +82,7 @@ const Messages: React.FC = () => {
   }, [selectedGroup?.id, page]);
 
   useEffect(() => {
-    const callback = (payload: ChatPayload) => {
+    const handleWsReceiveChat = (payload: ChatPayload) => {
       if (payload.groupId === selectedGroup?.id) {
         setMessages(prevMessages => {
           if (prevMessages.length > 0 && prevMessages[0].id === payload.messageId)
@@ -108,8 +108,8 @@ const Messages: React.FC = () => {
           } } : g
         ));
     };
-    wsService.subscribe<ChatPayload>('chat', callback);
-    return () => wsService.unsubscribe('chat', callback);
+    wsService.subscribe<ChatPayload>('chat', handleWsReceiveChat);
+    return () => wsService.unsubscribe('chat', handleWsReceiveChat);
   }, [messages, selectedGroup?.id, groupChats]);
 
   const handleSendMessage = async () => {

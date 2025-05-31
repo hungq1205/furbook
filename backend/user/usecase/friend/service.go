@@ -27,41 +27,41 @@ func (s *Service) CheckFriendRequest(senderName string, receiverName string) (bo
 	return s.friendRepo.CheckFriendRequest(senderName, receiverName)
 }
 
-func (s *Service) SendFriendRequest(senderName string, receiverName string) error {
+func (s *Service) SendFriendRequest(senderName string, receiverName string) (FriendRequestResult, error) {
 	friendExists, err := s.friendRepo.CheckFriendship(senderName, receiverName)
 	if err != nil {
-		return err
+		return FriendRequestNone, err
 	}
 	if friendExists {
-		return nil
+		return FriendRequestNone, nil
 	}
 
 	friendReqExists, err := s.friendRepo.CheckFriendRequest(senderName, receiverName)
 	if err != nil {
-		return err
+		return FriendRequestNone, err
 	}
 	if friendReqExists {
-		return nil
+		return FriendRequestNone, nil
 	}
 
 	isReciprocal, err := s.friendRepo.CheckFriendRequest(receiverName, senderName)
 	if err != nil {
-		return err
+		return FriendRequestNone, err
 	}
 	if isReciprocal {
 		if err := s.friendRepo.DeleteFriendRequest(receiverName, senderName); err != nil {
-			return err
+			return FriendRequestNone, err
 		}
 		if err := s.friendRepo.AddFriend(senderName, receiverName); err != nil {
-			return err
+			return FriendRequestNone, err
 		}
+		return FriendRequestAccepted, nil
 	} else {
 		if err := s.friendRepo.SendFriendRequest(senderName, receiverName); err != nil {
-			return err
+			return FriendRequestNone, err
 		}
+		return FriendRequestSend, nil
 	}
-
-	return nil
 }
 
 func (s *Service) DeleteFriendRequest(senderName string, receiverName string) error {

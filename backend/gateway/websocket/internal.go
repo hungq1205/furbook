@@ -29,6 +29,10 @@ func MakeHandler(app *gin.Engine, groupClient client.GroupClient) {
 	app.POST("/ws/message", func(c *gin.Context) {
 		handleChatMessage(c, groupClient)
 	})
+
+	app.POST("/ws/noti", func(c *gin.Context) {
+		handleNotificationMessage(c)
+	})
 }
 
 func handleChatMessage(c *gin.Context, groupClient client.GroupClient) {
@@ -71,6 +75,41 @@ func handleChatMessage(c *gin.Context, groupClient client.GroupClient) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Group not found or user not in group"})
 			return
 		}
+	}
+}
+
+func handleNotificationMessage(c *gin.Context) {
+	username := c.Request.Header.Get("X-Username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No username provided"})
+		return
+	}
+
+	var body NotificationPayload
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	fmt.Printf("[NOTI] %v: %v\n", len(clients), clients)
+	client, ok := clients[body.Username]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not connected"})
+		return
+	}
+
+	payload, err := json.Marshal(body)
+	if err != nil {
+		fmt.Println("Failed to marshal chat payload:", err)
+		return
+	}
+	msg := Message{
+		Type:    MessageNotification,
+		Payload: json.RawMessage(payload),
+	}
+	if client.Conn.WriteJSON(msg) != nil {
+		fmt.Println("Failed to send notification message through socket:", err)
+		return
 	}
 }
 
@@ -207,7 +246,7 @@ func handleMessages(client *Client) {
 				continue
 			}
 
-			fmt.Printf("[NOTIFICATION] To %s: %s - %s\n", client.Username, notif.Title, notif.Body)
+			fmt.Printf("[NOTIFICATION] To %s: %s - %s\n", client.Username, notif.Desc, notif.Link)
 			client.Conn.WriteMessage(websocket.TextMessage, msgBytes)
 
 		default:
@@ -238,9 +277,6 @@ func broadcastToGroup(groupID int, message []byte, ignore string) {
 }
 
 func tryBroadcastToGroup(ignore string, groupID int, message interface{}) bool {
-	fmt.Println(groupID)
-	fmt.Println(groupMembers[groupID])
-	fmt.Println(message)
 	users, ok := groupMembers[groupID]
 	if ok {
 		for _, username := range users {

@@ -37,9 +37,11 @@ func makeHandler() *gin.Engine {
 
 	friendService := friendService.NewService(friendRepo)
 	userService := userService.NewService(userRepo)
-	groupClient := client.NewGroupClient("http://message:8080")
 
-	user.MakeHandler(app, userService, friendService, groupClient)
+	groupClient := client.NewGroupClient("http://message:8080")
+	notiClient := client.NewNotiClient("http://noti:8080")
+
+	user.MakeHandler(app, userService, friendService, groupClient, notiClient)
 
 	return app
 }

@@ -9,8 +9,13 @@ import { useAuth } from '../../services/authService';
 import { Media, postService, BlogPostPayload } from '../../services/postService';
 import { fileService } from '../../services/fileService';
 import { handleError } from '../../utils/errors';
+import { Post } from '../../types/post';
 
-const CreatePostInput: React.FC = () => {
+interface CreatePostInputProps {
+  onUploaded: (post: Post) => void;
+}
+
+const CreatePostInput: React.FC<CreatePostInputProps> = ({ onUploaded }) => {
   const authService = useAuth();
 
   const [content, setContent] = useState('');
@@ -37,7 +42,7 @@ const CreatePostInput: React.FC = () => {
           url: await fileService.upload(file),
         } as Media))
       );
-      await postService.createBlogPost({ content, medias } as BlogPostPayload);
+      onUploaded(await postService.createBlogPost({ content, medias } as BlogPostPayload));
     } catch (err) {
       handleError(err, 'failed to create blog post', authService.logout);
     }

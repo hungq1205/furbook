@@ -18,6 +18,7 @@ var (
 	messageServiceURL string = os.Getenv("MESSAGE_SERVICE_URL")
 	postServiceURL    string = os.Getenv("POST_SERVICE_URL")
 	userServiceURL    string = os.Getenv("USER_SERVICE_URL")
+	notiServiceURL    string = os.Getenv("NOTI_SERVICE_URL")
 )
 
 func main() {
@@ -72,6 +73,9 @@ func MakeGatewayHandler(app *gin.Engine) {
 
 	group.Any("/api/user", ProxyTo(userServiceURL))
 	group.Any("/api/user/*path", ProxyTo(userServiceURL))
+
+	group.Any("/api/noti", ProxyTo(notiServiceURL))
+	group.Any("/api/noti/*path", ProxyTo(notiServiceURL))
 }
 
 func ProxyTo(targetHost string) gin.HandlerFunc {

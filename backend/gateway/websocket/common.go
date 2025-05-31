@@ -39,6 +39,11 @@ type ChatPayload struct {
 }
 
 type NotificationPayload struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	ID        int       `json:"id"`
+	Username  string    `json:"username"`
+	Icon      string    `json:"icon"`
+	Desc      string    `json:"desc"`
+	Link      string    `json:"link"`
+	Read      bool      `json:"read"`
+	CreatedAt time.Time `json:"created_at"`
 }

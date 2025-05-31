@@ -5,9 +5,10 @@ import { Media } from '../../types/post';
 interface MediaGalleryProps {
   media: Media[];
   className?: string;
+  crop?: boolean;
 }
 
-const MediaGallery: React.FC<MediaGalleryProps> = ({ media, className = '' }) => {
+const MediaGallery: React.FC<MediaGalleryProps> = ({ media, className = '', crop = true }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!media || media.length === 0) {
@@ -48,7 +49,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, className = '' }) =>
   return (
     <div className={`relative overflow-hidden rounded-md ${className}`}>
       <div className="aspect-video bg-gray-100 relative">
-        <div className="w-full h-full">
+        <div className={crop ? "w-full h-full" : "w-full"}>
           {renderMedia(media[currentIndex])}
         </div>
       </div>
