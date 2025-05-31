@@ -227,7 +227,7 @@ const PostDetail: React.FC = () => {
           
           {post.medias?.length > 0 && (
             <div className="mb-6">
-              <MediaGallery media={post.medias} />
+              <MediaGallery media={post.medias} crop={false} />
             </div>
           )}
           
@@ -251,28 +251,30 @@ const PostDetail: React.FC = () => {
             </div>
             {post.type !== 'blog' && post.username === authUsername ?
               <div className="flex space-x-3">
-              <Button
-                variant={post.isResolved ? 'ghost' : 'success'}
-                icon={<Paperclip size={18} />}
-                disabled={post.isResolved}
-                onClick={handleResolve}
-              >
-                {post.isResolved ? 'Resolved' : 'Mark resolved'}
-              </Button>
-              <Button variant="outline" ring={false} icon={<Copy size={18} />}>
-                Copy Link
-              </Button>
-            </div>
+                <Button
+                  variant={post.isResolved ? 'ghost' : 'success'}
+                  icon={<Paperclip size={18} />}
+                  disabled={post.isResolved}
+                  onClick={handleResolve}
+                >
+                  {post.isResolved ? 'Resolved' : 'Mark resolved'}
+                </Button>
+                <Button variant="outline" ring={false} icon={<Copy size={18} />}>
+                  Copy Link
+                </Button>
+              </div>
             :
               <div className="flex space-x-3">
-                <Button
-                  variant={post.isResolved ? 'ghost' : 'secondary'}
-                  icon={<Users size={18} />}
-                  disabled={post.isResolved}
-                  onClick={handleParticipate}
-                >
-                  {post.isResolved && userHelped ? 'Helped' : userHelped ? 'Helping' : 'Help Find'}
-                </Button>
+                { post.type !== 'blog' && 
+                  <Button
+                    variant={post.isResolved ? 'ghost' : 'secondary'}
+                    icon={<Users size={18} />}
+                    disabled={post.isResolved}
+                    onClick={handleParticipate}
+                  >
+                    {post.isResolved && userHelped ? 'Helped' : userHelped ? 'Helping' : 'Help Find'}
+                  </Button>
+                }
                 <Button variant="outline" ring={false} icon={<Copy size={18} />}>
                   Copy Link
                 </Button>

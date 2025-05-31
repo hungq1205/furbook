@@ -158,7 +158,7 @@ const Auth: React.FC = () => {
                 <input
                   id="cf-password"
                   name="cf-password"
-                  type="cf-password"
+                  type="password"
                   required
                   value={cfPassword}
                   onChange={(e) => setCfPassword(e.target.value)}

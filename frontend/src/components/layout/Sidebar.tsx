@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, PawPrint, MessageCircle, LogOut } from 'lucide-react';
+import { Home, User, PawPrint, MessageCircle, LogOut, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { icon: <Home size={24} />, label: 'Feed', path: '/' },
     { icon: <PawPrint size={24} />, label: 'Lost Pets', path: '/lost-pets' },
     { icon: <MessageCircle size={24} />, label: 'Messages', path: '/messages' },
+    { icon: <Bell size={24} />, label: 'Notifications', path: '/notifications' },
     { icon: <User size={24} />, label: 'Profile', path: '/profile' },
   ];
 

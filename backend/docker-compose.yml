@@ -29,6 +29,7 @@ services:
       MESSAGE_SERVICE_URL: "http://message:8080"
       POST_SERVICE_URL: "http://post:8080"
       USER_SERVICE_URL: "http://user:8080"
+      NOTI_SERVICE_URL: "http://noti:8080"
     networks:
       - backend
       - frontend
@@ -101,8 +102,32 @@ services:
     networks:
       - backend
 
+  notidb:
+    image: postgres
+    restart: always
+    ports:
+      - "5436:5432"
+    volumes:
+      - notidb_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: noti
+    networks:
+      - backend
+
+  noti:
+    build: ./noti
+    depends_on:
+      - notidb
+    ports:
+      - "3004:8080"
+    networks:
+      - backend
+
 volumes:
   authdb_data:
   messagedb_data:
   postdb_data:
   userdb_data:
+  notidb_data:

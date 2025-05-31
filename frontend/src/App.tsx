@@ -12,38 +12,11 @@ import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import CreateLostPet from './pages/CreateLostPet';
 import Messages from './pages/Messages';
-import { AuthProvider, useAuth } from './services/authService';
+import { AuthProvider } from './services/authService';
 import Auth from './pages/Auth';
-import { useEffect, useState } from 'react';
-import wsService from './services/webSocketService';
-
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const [authChecked, setAuthChecked] = useState(false);
-  const authService = useAuth();
-
-  useEffect(() => {
-    authService.refresh()
-      .then(() => {
-        setAuthChecked(true);
-      })
-      .catch((error) => {
-        console.error('Error checking authentication:', error);
-        authService.logout();
-        setAuthChecked(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!authService.isAuthenticated) return;
-    wsService.connect(authService.token!);
-    return () => wsService.disconnect();
-  }, [authService.currentUser?.username]);
-
-  if (!authChecked)
-    return <div>Loading...</div>;
-
-  return authService.isAuthenticated ? children : <Navigate to="/login" replace />;
-};
+import ProtectedRoute from './components/layout/ProtectedRoute';
+import Notifications from './pages/Notification';
+import Toast from './components/common/Toast';
 
 function App() {
   return (
@@ -64,6 +37,7 @@ function App() {
             <Route index element={<Feed />} />
             <Route path="lost-pets" element={<LostPets />} />
             <Route path="messages" element={<Messages />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="profile" element={<Profile />} />
             <Route path="profile/:username" element={<Profile />} />
             <Route path="post/:id" element={<PostDetail />} />
@@ -84,6 +58,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+      <Toast />
     </Router>
     </AuthProvider>
   );

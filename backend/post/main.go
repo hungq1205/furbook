@@ -31,9 +31,11 @@ func makeHandler() *gin.Engine {
 	mongoDB := mongoClient.Database("test")
 
 	postRepo := postRepo.NewRepository(mongoDB)
-	postService := postService.NewService(postRepo)
 
 	userClient := client.NewUserClient("http://user:8080")
+	notiClient := client.NewNotiClient("http://noti:8080")
+
+	postService := postService.NewService(postRepo, notiClient)
 
 	post.MakeHandler(app, postService, userClient)
 

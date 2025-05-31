@@ -178,15 +178,33 @@ func CheckFriendship(ctx *gin.Context, Service friend.UseCase) {
 	ctx.JSON(http.StatusOK, payload.FriendshipResponse{Friendship: payload.None})
 }
 
-func SendFriendRequest(ctx *gin.Context, Service friend.UseCase) {
+func SendFriendRequest(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase, notiClient client.NotiClient) {
 	var body payload.ReceiverWrapper
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	if err := Service.SendFriendRequest(util.MustGetUsername(ctx), body.Receiver); err != nil {
+	authUsername := util.MustGetUsername(ctx)
+	frtype, err := friendService.SendFriendRequest(authUsername, body.Receiver)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send friend request"})
 		return
+	}
+	switch frtype {
+	case friend.FriendRequestSend:
+		user, err := userService.GetUser(authUsername)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send notification - can not get username"})
+			return
+		}
+		notiClient.CreateNoti(body.Receiver, user.Avatar, "friendRequest:send", authUsername)
+	case friend.FriendRequestAccepted:
+		user, err := userService.GetUser(authUsername)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send notification - can not get username"})
+			return
+		}
+		notiClient.CreateNoti(body.Receiver, user.Avatar, "friendRequest:accepted", authUsername)
 	}
 	ctx.JSON(http.StatusOK, nil)
 }
@@ -204,16 +222,23 @@ func DeleteFriendRequest(ctx *gin.Context, Service friend.UseCase) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
-func DeleteIncomingFriendRequest(ctx *gin.Context, Service friend.UseCase) {
+func DeleteIncomingFriendRequest(ctx *gin.Context, userService user.UseCase, friendService friend.UseCase, notiClient client.NotiClient) {
 	var body payload.SenderWrapper
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	if err := Service.DeleteFriendRequest(body.Sender, util.MustGetUsername(ctx)); err != nil {
+	authUsername := util.MustGetUsername(ctx)
+	if err := friendService.DeleteFriendRequest(body.Sender, authUsername); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete friend request"})
 		return
 	}
+	user, err := userService.GetUser(authUsername)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send notification - can not get username"})
+		return
+	}
+	notiClient.CreateNoti(body.Sender, user.Avatar, "friendRequest:declined", authUsername)
 	ctx.JSON(http.StatusNoContent, nil)
 }
 

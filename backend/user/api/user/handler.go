@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend.UseCase, groupClient client.GroupClient) {
+func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend.UseCase, groupClient client.GroupClient, notiClient client.NotiClient) {
 	userGroup := app.Group("/api/user")
 	{
 		// Public routes
@@ -53,7 +53,7 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 		})
 
 		authGroup.POST("/friend-requests", func(c *gin.Context) {
-			SendFriendRequest(c, friendService)
+			SendFriendRequest(c, userService, friendService, notiClient)
 		})
 
 		authGroup.DELETE("/friend-requests/revoke", func(c *gin.Context) {
@@ -61,7 +61,7 @@ func MakeHandler(app *gin.Engine, userService user.UseCase, friendService friend
 		})
 
 		authGroup.DELETE("/friend-requests/decline", func(c *gin.Context) {
-			DeleteIncomingFriendRequest(c, friendService)
+			DeleteIncomingFriendRequest(c, userService, friendService, notiClient)
 		})
 	}
 }

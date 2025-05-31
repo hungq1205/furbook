@@ -1,4 +1,3 @@
-// WebSocketService.ts
 type MessageType = 'auth' | 'chat' | 'notification';
 
 export type Message = {
@@ -20,11 +19,6 @@ export type ChatPayload = {
   groupId: number;
   content: string;
   createdAt: string;
-};
-
-export type NotificationPayload = {
-  title: string;
-  body: string;
 };
 
 type OnMessageCallback<T = any> = (payload: T) => void;
@@ -128,7 +122,6 @@ class WebSocketService {
     this.socket = null;
     this.isAuthenticated = false;
     this.authPromise = null;
-    this.messageListeners = new Map();
   }
 
   private notifyListeners(type: MessageType, payload: any): void {

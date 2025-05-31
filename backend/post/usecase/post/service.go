@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"post/api/client"
 	"post/entity"
 	"post/infrastructure/repository/post"
 	"post/util"
@@ -12,12 +13,15 @@ import (
 )
 
 type Service struct {
-	postRepo *post.Repository
+	postRepo    *post.Repository
+	notiClient  client.NotiClient
+	userService client.UserClient
 }
 
-func NewService(postRepo *post.Repository) *Service {
+func NewService(postRepo *post.Repository, notiClient client.NotiClient) *Service {
 	return &Service{
-		postRepo: postRepo,
+		postRepo:   postRepo,
+		notiClient: notiClient,
 	}
 }
 
@@ -91,7 +95,14 @@ func (s *Service) PatchContent(ctx context.Context, id, content string, medias [
 }
 
 func (s *Service) PatchLostFoundStatus(ctx context.Context, id string, isResolved bool) error {
-	return s.postRepo.PatchFound(ctx, id, isResolved)
+	if err := s.postRepo.PatchFound(ctx, id, isResolved); err != nil {
+		return err
+	}
+	post, err := s.postRepo.GetPost(ctx, id)
+	if err != nil {
+		return err
+	}
+	return s.notiClient.CreateNotiToUsers(post.Participants, "post", "post:resolved:"+post.Username, id)
 }
 
 func (s *Service) DeletePost(ctx context.Context, id string) error {
@@ -109,7 +120,17 @@ func (s *Service) GetComments(ctx context.Context, postId string) ([]entity.Comm
 }
 
 func (s *Service) CreateComment(ctx context.Context, postId, username, content string) error {
-	return s.postRepo.CreateComment(ctx, postId, username, content)
+	if err := s.postRepo.CreateComment(ctx, postId, username, content); err != nil {
+		return err
+	}
+	post, err := s.postRepo.GetPost(ctx, postId)
+	if err != nil {
+		return err
+	}
+	if post.Username != username {
+		_, err = s.notiClient.CreateNoti(post.Username, "post", "post:comment:"+username, postId)
+	}
+	return err
 }
 
 func (s *Service) DeleteComment(ctx context.Context, postId, username string) error {
@@ -119,7 +140,17 @@ func (s *Service) DeleteComment(ctx context.Context, postId, username string) er
 // Interaction
 
 func (s *Service) UpsertInteraction(ctx context.Context, postId, username string, itype entity.InteractionType) error {
-	return s.postRepo.UpsertInteraction(ctx, postId, username, itype)
+	if err := s.postRepo.UpsertInteraction(ctx, postId, username, itype); err != nil {
+		return err
+	}
+	post, err := s.postRepo.GetPost(ctx, postId)
+	if err != nil {
+		return err
+	}
+	if post.Username != username {
+		_, err = s.notiClient.CreateNoti(post.Username, "post", "post:interaction:"+username, postId)
+	}
+	return err
 }
 
 func (s *Service) DeleteInteraction(ctx context.Context, postId, username string) error {
@@ -129,11 +160,27 @@ func (s *Service) DeleteInteraction(ctx context.Context, postId, username string
 // Participation
 
 func (s *Service) Participate(ctx context.Context, postId, username string) error {
-	return s.postRepo.Participate(ctx, postId, username)
+	if err := s.postRepo.Participate(ctx, postId, username); err != nil {
+		return err
+	}
+	post, err := s.postRepo.GetPost(ctx, postId)
+	if err != nil {
+		return err
+	}
+	_, err = s.notiClient.CreateNoti(post.Username, "post", "post:participate:"+username, postId)
+	return err
 }
 
 func (s *Service) Unparticipate(ctx context.Context, postId, username string) error {
-	return s.postRepo.Unparticipate(ctx, postId, username)
+	if err := s.postRepo.Unparticipate(ctx, postId, username); err != nil {
+		return err
+	}
+	post, err := s.postRepo.GetPost(ctx, postId)
+	if err != nil {
+		return err
+	}
+	_, err = s.notiClient.CreateNoti(post.Username, "post", "post:unparticipate:"+username, postId)
+	return err
 }
 
 func fetchAddress(lat, lon float64) (string, error) {

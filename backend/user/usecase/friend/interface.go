@@ -2,10 +2,18 @@ package friend
 
 import "user/entity"
 
+type FriendRequestResult int
+
+const (
+	FriendRequestNone FriendRequestResult = iota
+	FriendRequestSend
+	FriendRequestAccepted
+)
+
 type UseCase interface {
 	GetFriendRequests(username string) ([]*entity.User, error)
 	CheckFriendRequest(senderName string, receiverName string) (bool, error)
-	SendFriendRequest(senderName string, receiverName string) error
+	SendFriendRequest(senderName string, receiverName string) (FriendRequestResult, error)
 	DeleteFriendRequest(senderName string, receiverName string) error
 	CountFriendRequests(username string) (int, error)
 
