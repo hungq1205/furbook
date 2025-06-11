@@ -19,6 +19,10 @@ func MakeHandler(app *gin.Engine, postService *post.Service, userClient client.U
 			GetNearLostPosts(c, postService, userClient)
 		})
 
+		postGroup.GET("/ofUser/:username/participated", func(c *gin.Context) {
+			GetParticipatedPostsOfUser(c, postService, userClient)
+		})
+
 		postGroup.GET("/ofUser/:username", func(c *gin.Context) {
 			GetPostsOfUser(c, postService, userClient)
 		})

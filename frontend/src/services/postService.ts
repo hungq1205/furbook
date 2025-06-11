@@ -60,6 +60,14 @@ export const postService = {
     return response.json();
   },
 
+  async getParticipatedBy(username: string): Promise<Post[]> {
+    const response = await fetch(`${POST_URL}/ofUser/${username}/participated`, {
+      headers: defaultAuthHeaders()
+    })
+    if (!response.ok) throw new HttpError(response.status, await response.json());
+    return response.json();
+  },
+
   async createBlogPost(payload: BlogPostPayload): Promise<Post> {
     const response = await fetch(`${POST_URL}/blog`, {
       method: 'POST',

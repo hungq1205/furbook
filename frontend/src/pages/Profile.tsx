@@ -23,6 +23,7 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posts' | 'lost-pets' | 'participated'>('posts');
   const [friendStatus, setFriendStatus] = useState<Friendship>('none');
   const [posts, setPosts] = useState<Post[]>([]); 
+  const [participatedPosts, setParticipatedPosts] = useState<Post[]>([]); 
   const lostPosts = useRef<Post[]>([]);
 
   const currentUser = authService.currentUser!;
@@ -52,6 +53,9 @@ const Profile: React.FC = () => {
         setPosts(posts);
         lostPosts.current = posts.filter(post => post.type !== 'blog');
       })
+      .catch(error => console.error('Failed to fetch posts:', error));
+    postService.getParticipatedBy(profileUser.username)
+      .then(setParticipatedPosts)
       .catch(error => console.error('Failed to fetch posts:', error));
   }, [profileUser]);
   
@@ -131,7 +135,7 @@ const Profile: React.FC = () => {
   const tabs = [
     { username: 'posts', label: 'Posts', count: posts.length },
     { username: 'lost-pets', label: 'Lost & Found', count: lostPosts.current.length },
-    { username: 'participated', label: 'Participated', count: 1 },
+    { username: 'participated', label: 'Participated', count: participatedPosts.length },
   ];
 
   if (!profileUser)
@@ -275,8 +279,8 @@ const Profile: React.FC = () => {
         
         {activeTab === 'participated' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posts.length > 0 ? (
-              posts.map(post => (
+            {participatedPosts.length > 0 ? (
+              participatedPosts.map(post => (
                 <motion.div
                   key={post.id}
                   initial={{ opacity: 0, y: 10 }}
