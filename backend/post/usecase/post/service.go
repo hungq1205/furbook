@@ -39,6 +39,10 @@ func (s *Service) GetNearLostPosts(ctx context.Context, latitude float64, longit
 	return s.postRepo.GetNearLostPosts(ctx, latitude, longitude, pagination)
 }
 
+func (s *Service) GetParticipatedPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
+	return s.postRepo.GetParticipatedPostsOfUser(ctx, username, pagination)
+}
+
 func (s *Service) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
 	return s.postRepo.GetPostsOfUser(ctx, username, pagination)
 }

@@ -79,6 +79,26 @@ func GetPostsOfUser(c *gin.Context, postService *post.Service, userClient client
 	c.JSON(http.StatusOK, pPosts)
 }
 
+func GetParticipatedPostsOfUser(c *gin.Context, postService *post.Service, userClient client.UserClient) {
+	ctx := c.Request.Context()
+	username := c.Param("username")
+	pagination := util.ExtractPagination(c)
+
+	posts, err := postService.GetParticipatedPostsOfUser(ctx, username, pagination)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	pPosts, err := ListPostEntityToPresenterWithClient(posts, userClient)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error converting post: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, pPosts)
+}
+
 func GetPostsOfUsers(c *gin.Context, postService *post.Service, userClient client.UserClient) {
 	var body payload.UsersPostsRequest
 	if err := c.ShouldBindJSON(&body); err != nil {

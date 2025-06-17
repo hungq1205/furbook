@@ -70,6 +70,22 @@ func (p *Repository) GetNearLostPosts(ctx context.Context, latitude float64, lon
 	return posts, nil
 }
 
+func (p *Repository) GetParticipatedPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
+	var posts []*entity.Post
+	opts := options.Find().SetSort(bson.D{{Key: "createdAt", Value: -1}}).SetSkip(pagination.Offset()).SetLimit(pagination.Size)
+	cursor, err := p.postCollection.Find(ctx, bson.M{"participants": username}, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err = cursor.All(ctx, &posts); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
 func (p *Repository) GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error) {
 	var posts []*entity.Post
 

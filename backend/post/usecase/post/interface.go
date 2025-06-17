@@ -10,6 +10,7 @@ import (
 type UseCase interface {
 	GetPost(ctx context.Context, id string) (*entity.Post, error)
 	GetNearLostPosts(ctx context.Context, latitude float64, longitude float64) ([]*entity.Post, error)
+	GetParticipatedPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error)
 	GetPostsOfUser(ctx context.Context, username string, pagination util.Pagination) ([]*entity.Post, error)
 	GetPostsOfUsers(ctx context.Context, usernames []string, pagination util.Pagination) ([]*entity.Post, error)
 	CheckOwnership(ctx context.Context, username, postId string) (bool, error)
