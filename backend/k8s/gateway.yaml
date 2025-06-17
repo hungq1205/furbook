@@ -25,7 +25,8 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: gateway:latest
+          image: backend-gateway:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:
@@ -35,3 +36,5 @@ spec:
               value: "http://post:8080"
             - name: USER_SERVICE_URL
               value: "http://user:8080"
+            - name: NOTI_SERVICE_URL
+              value: "http://noti:8080"

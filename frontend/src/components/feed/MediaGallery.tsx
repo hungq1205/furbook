@@ -58,14 +58,14 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({ media, className = '', crop
         <>
           <button 
             onClick={handlePrevious}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-1 rounded-full hover:bg-black/50 transition-colors z-10"
+            className="absolute top-1/2 -translate-y-1/2 p-3 h-full bg-gradient-to-r from-black/30 to-transparent text-white hover:from-black/40 p-1 z-10"
             aria-label="Previous media"
           >
             <ChevronLeft size={20} />
           </button>
           <button 
             onClick={handleNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-1 rounded-full hover:bg-black/50 transition-colors z-10"
+            className="absolute top-1/2 right-0 -translate-y-1/2 p-3 h-full bg-gradient-to-l from-black/30 to-transparent text-white hover:from-black/40 p-1 z-10"
             aria-label="Next media"
           >
             <ChevronRight size={20} />

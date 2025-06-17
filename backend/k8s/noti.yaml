@@ -1,31 +1,31 @@
 apiVersion: v1
 kind: Service
-metadata:
-  name: message
+metadata: 
+  name: noti
 spec:
   ports:
     - port: 8080
       targetPort: 8080
   selector:
-    app: message
+    app: noti
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: message
+  name: noti
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: message
+      app: noti
   template:
     metadata:
       labels:
-        app: message
+        app: noti
     spec:
       containers:
-        - name: message
-          image: backend-message:latest
+        - name: noti
+          image: backend-noti:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 8080
+            - containerPort: 8080 

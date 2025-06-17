@@ -25,6 +25,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: user:latest
+          image: backend-user:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080

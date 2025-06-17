@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       headers: defaultHeaders,
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new HttpError(response.status, await response.json());
+    if (!response.ok) throw new HttpError(response.status, (await response.json()).error);
 
     const { token: newToken, user } = await response.json() as { token: string; user: User };
     saveToken(newToken);

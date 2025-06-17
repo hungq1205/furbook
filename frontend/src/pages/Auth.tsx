@@ -30,6 +30,7 @@ const Auth: React.FC = () => {
         }
         navigate('/');
     } catch (err) {
+        console.log(err)
         setError(err instanceof HttpError ? err.message : isLogin ? 'Failed to sign in' : 'Failed to sign up');
     }
   };

@@ -131,16 +131,16 @@ const CreatePostInput: React.FC<CreatePostInputProps> = ({ onUploaded }) => {
               transition={{ duration: 0.3 }}
             >
               <div className="flex justify-end space-x-2">
-                <Button variant="ghost" onClick={handleCancel}>
+                <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
                   Cancel
                 </Button>
                 <Button 
                   variant="primary" 
                   onClick={handleSubmit}
-                  disabled={!content.trim()}
+                  disabled={!content.trim() || isLoading}
                   icon={<Send size={16} />}
                 >
-                  Post
+                  { isLoading ? 'Posting...' : 'Post' }
                 </Button>
               </div>
             </motion.div>

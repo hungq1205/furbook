@@ -25,6 +25,7 @@ spec:
     spec:
       containers:
         - name: post
-          image: post:latest
+          image: backend-post:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
