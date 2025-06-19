@@ -47,7 +47,7 @@ const LostPetMap: React.FC<LostPetMapProps> = ({ post, userLocation }) => {
     html: `
       <div class="flex flex-col items-center translate-y-[-50%]">
         <div class="bg-white rounded-lg p-2 shadow-md text-center w-[110px]">
-          <div class="text-xs font-bold text-gray-700">Last Seen</div>
+          <div class="text-xs font-bold text-gray-700">${ post.type === "found" ? "Found" : "Last Seen"}</div>
           ${ userLocation ? `<div class="text-xs text-gray-500">${lastSeenDistance} away</div>` : ''}
         </div>
         <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-white -mt-[1px]"></div>

@@ -36,11 +36,13 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
     <Card interactive className="h-full flex flex-col" bg={`${!post.isResolved ? 'bg-white-100' : 'bg-teal-50'}`}>
       <div className="relative">
         {post.medias?.length > 0 && (
-          <img 
-            src={post.medias[0].url} 
-            alt="Pet"
-            className="w-full h-48 object-cover"
-          />
+          <Link to={`/lost-pets/${post.id}`}>
+            <img 
+              src={post.medias[0].url} 
+              alt="Pet"
+              className="w-full h-48 object-cover"
+            />
+          </Link>
         )}
         <div className='absolute top-3 right-3 flex flex-row space-x-2'>
           { !post.isResolved && userLocation && 
@@ -56,8 +58,10 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
       </div>
       
       <div className="p-4 flex flex-col grow">
-        <h3 className="text-lg font-medium text-gray-900 mb-2 grow">{post.content.split('\n')[0]}</h3>
-        
+        <Link to={`/lost-pets/${post.id}`}>
+          <h3 className="text-lg font-medium text-gray-900 mb-2 grow">{post.content.split('\n')[0]}</h3>
+        </Link>
+
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">
           <MapPin size={16} />
           <span>{post.lastSeen?.address}</span>
@@ -76,8 +80,12 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Avatar src={post.userAvatar} alt={post.displayName} size="sm" />
-            <span className="text-sm text-gray-700">{post.displayName}</span>
+            <Link to={`/profile/${post.username}`}>
+              <Avatar src={post.userAvatar} alt={post.displayName} size="sm" />
+            </Link>
+            <Link to={`/profile/${post.username}`}>
+              <span className="text-sm text-gray-700">{post.displayName}</span>
+            </Link>
           </div>
           
           <Link to={`/lost-pets/${post.id}`}>

@@ -157,12 +157,14 @@ const Profile: React.FC = () => {
                   alt={profileUser.displayName}
                   size="xl"
                 />
-                <div 
-                  className="absolute text-white inset-0 border-2 rounded-full bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => document.getElementById('avatar-input')?.click()}
-                >
-                  <Edit size={30} />
-                </div>
+                { profileUser.username === currentUser.username && 
+                  <div 
+                    className="absolute text-white inset-0 border-2 rounded-full bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => document.getElementById('avatar-input')?.click()}
+                  >
+                    <Edit size={30} />
+                  </div> 
+                }
               </div>
               <input
                 id="avatar-input"
