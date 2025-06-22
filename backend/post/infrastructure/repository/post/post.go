@@ -2,6 +2,7 @@ package post
 
 import (
 	"context"
+	"fmt"
 	"post/entity"
 	"post/util"
 	"time"
@@ -18,7 +19,28 @@ type Repository struct {
 }
 
 func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{postCollection: db.Collection("post")}
+	repo := &Repository{postCollection: db.Collection("post")}
+	repo.ensureIndexes()
+	return repo
+}
+
+func (r *Repository) ensureIndexes() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	indexModel := mongo.IndexModel{
+		Keys: bson.D{
+			{Key: "lastSeen.location", Value: "2dsphere"},
+		},
+		Options: options.Index().SetName("geo_location_index"),
+	}
+
+	_, err := r.postCollection.Indexes().CreateOne(ctx, indexModel)
+	if err != nil {
+		fmt.Printf("Failed to create 2dsphere index: %v", err)
+	} else {
+		fmt.Println("2dsphere index created successfully on lastSeen.location")
+	}
 }
 
 func (p *Repository) GetPost(ctx context.Context, id string) (*entity.Post, error) {
