@@ -2,12 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, User, PawPrint, MessageCircle, LogOut, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../services/authService';
 
 interface SidebarProps {
   className?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
+  const { logout } = useAuth(); 
   const menuItems = [
     { icon: <Home size={24} />, label: 'Feed', path: '/' },
     { icon: <PawPrint size={24} />, label: 'Lost Pets', path: '/lost-pets' },
@@ -61,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
       
       <div className="mt-auto">
-        <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors mt-2">
+        <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors mt-2" onClick={logout}>
           <LogOut size={24} />
           <span>Logout</span>
         </button>
