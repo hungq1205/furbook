@@ -58,8 +58,8 @@ const LostPetCard: React.FC<LostPetCardProps> = ({ post, userLocation }) => {
       </div>
       
       <div className="p-4 flex flex-col grow">
-        <Link to={`/lost-pets/${post.id}`}>
-          <h3 className="text-lg font-medium text-gray-900 mb-2 grow">{post.content.split('\n')[0]}</h3>
+        <Link className="grow" to={`/lost-pets/${post.id}`}>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{post.content.split('\n')[0]}</h3>
         </Link>
 
         <div className="flex items-center space-x-2 text-sm text-gray-500 mb-3">

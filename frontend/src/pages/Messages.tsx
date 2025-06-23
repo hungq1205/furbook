@@ -24,6 +24,7 @@ const Messages: React.FC = () => {
   const [page, setPage] = useState(0);
   const [firstLoad, setFirstLoad] = useState(true);
   const [userDict, setUserDict] = useState<Map<string, User>>(new Map());
+  const [query, setQuery] = useState('');
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const isOutOfMessages = useRef(false);
   const isFetchingMessages = useRef(false);
@@ -203,10 +204,12 @@ const Messages: React.FC = () => {
                     type="text"
                     placeholder="Find a conversation..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
                   />
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 </div>
-                {groupChats.map(group => {
+                {groupChats.filter(g => g.name.toLowerCase().includes(query.toLowerCase())).map(group => {
                   return (
                     <button
                       key={group.id}
