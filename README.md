@@ -1,6 +1,8 @@
 
 # FurBook - Mạng xã hội thú cưng
 
+Report: [pdf](https://github.com/hungq1205/furbook/blob/master/Report.pdf)
+
 ## 1. Khởi động Frontend
 
 ```bash
